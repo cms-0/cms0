@@ -19,7 +19,7 @@
     "generate:docs-env": "bash scripts/generate-docs-env.sh",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "pnpm publish -r --filter './packages/*' --access public",
+    "release": "changeset publish",
     "verify:publish": "node scripts/verify-publishable-packages.mjs",
     "test": "pnpm test:unit && pnpm test:integration",
     "e2e:prepare": "bash scripts/e2e/prepare.sh",

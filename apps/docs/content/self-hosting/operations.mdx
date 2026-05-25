@@ -1,0 +1,55 @@
+---
+title: Operations
+description: Keep a self-hosted cms0 admin healthy after launch.
+---
+
+import { Callout, Cards } from "nextra/components";
+
+Self-hosted cms0 operations center on API keys, backups, triggers, and usage.
+
+<Cards num={2}>
+  <Cards.Card title="API keys" href="#api-keys" arrow />
+  <Cards.Card title="Backups" href="#backups" arrow />
+  <Cards.Card title="Triggers" href="#manual-triggers" arrow />
+  <Cards.Card title="Usage" href="#usage" arrow />
+</Cards>
+
+<Callout type="info">
+  A backup policy is only useful after you have restored one backup into a non-production database.
+</Callout>
+
+## API keys
+
+Use API keys for apps, CI, and automation.
+
+- Create separate keys for local development, CI, and production apps.
+- Copy the secret once and store it in your secret manager.
+- Revoke keys that are no longer used.
+- Prefer the smallest permission set that can do the job.
+
+## Backups
+
+Use backups before schema changes, migrations, and risky content imports.
+
+The backups area lets you create, download, restore, and delete backups. Test restores against a non-production database before trusting a backup policy.
+
+## Manual triggers
+
+Manual triggers call external URLs from the admin UI. Use them for operational actions such as cache purge, static rebuild, or downstream sync.
+
+Create triggers with clear button labels and success messages so editors know what happened.
+
+## Usage
+
+The usage view shows request activity, schema size, content counts, storage, API key count, and recent runtime activity.
+
+Use it to answer:
+
+- Is the runtime receiving traffic?
+- Did schema publishing happen recently?
+- Are storage or content counts growing unexpectedly?
+- Are there more API keys than expected?
+
+## Success check
+
+A self-hosted instance is operationally ready when you can issue and revoke a key, create and restore a backup, run a manual trigger, and see usage counters update after runtime activity.

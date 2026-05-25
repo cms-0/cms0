@@ -1,0 +1,100 @@
+---
+title: Framework setup
+description: Configure environment variables for common app frameworks.
+---
+
+import { Callout, Tabs } from "nextra/components";
+
+The cms0 client setup is the same in every framework. What changes is how your app reads environment variables.
+
+Use server-only environment variables for `CMS0_API_KEY` whenever possible.
+
+<Callout type="warning">
+  Only expose a cms0 key to browser code when the key is intentionally scoped for public reads.
+</Callout>
+
+<Tabs items={["Next.js", "React / Vite", "Vue / Vite", "SvelteKit"]}>
+  <Tabs.Tab>
+    ```ts filename="src/cms0.ts"
+    import { cms0 } from "@cms0/cms0";
+
+    export const cms = cms0<RootSchema>({
+      apiConfig: {
+        baseUrl: process.env.CMS0_API_BASE_URL,
+        key: process.env.CMS0_API_KEY,
+      },
+    });
+    ```
+
+    Use this from server components, route handlers, or server actions. Do not
+    expose the API key through `NEXT_PUBLIC_` variables.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ts filename="src/cms0.ts"
+    import { cms0 } from "@cms0/cms0";
+
+    export const cms = cms0<RootSchema>({
+      apiConfig: {
+        baseUrl: import.meta.env.VITE_CMS0_API_BASE_URL,
+        key: import.meta.env.VITE_CMS0_API_KEY,
+      },
+    });
+    ```
+
+    Only use `VITE_CMS0_API_KEY` in browser code when the key is intentionally
+    safe for that environment. Prefer a server endpoint for private keys.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ts filename="src/data/cms0.ts"
+    import { cms0 } from "@cms0/cms0";
+
+    export const cms = cms0<RootSchema>({
+      apiConfig: {
+        baseUrl: import.meta.env.VITE_CMS0_API_BASE_URL,
+        key: import.meta.env.VITE_CMS0_API_KEY,
+      },
+    });
+    ```
+
+    Vue with Vite follows the same environment rules as React with Vite.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ts filename="src/lib/server/cms0.ts"
+    import { CMS0_API_BASE_URL, CMS0_API_KEY } from "$env/static/private";
+    import { cms0 } from "@cms0/cms0";
+
+    export const cms = cms0<RootSchema>({
+      apiConfig: {
+        baseUrl: CMS0_API_BASE_URL,
+        key: CMS0_API_KEY,
+      },
+    });
+    ```
+
+    Keep this module under `src/lib/server` so private values stay on the
+    server.
+  </Tabs.Tab>
+</Tabs>
+
+## CLI config
+
+The CLI config can stay framework-neutral:
+
+```ts filename="cms0.config.ts" {5-12}
+import "dotenv/config";
+import { defineConfig } from "@cms0/cms0/config";
+
+export default defineConfig({
+  entry: "./src/cms0.ts",
+  api: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+Adjust `entry` if your framework keeps the cms0 schema in a different file.
+
+## Success check
+
+Your framework setup is correct when the app can read content without exposing private API keys to browser bundles.

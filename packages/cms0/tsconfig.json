@@ -1,0 +1,17 @@
+{
+    "extends": "@cms0/typescript-config/base.json",
+    "compilerOptions": {
+        "outDir": "dist/esm",
+        "rootDir": "src",
+        "declarationDir": "dist/types",
+        "paths": {
+            "@cms0/cms0/*": [
+                "./src/*"
+            ],
+        }
+    },
+    "include": [
+        "src",
+    ],
+    "references": []
+}

@@ -1,0 +1,62 @@
+{
+  "name": "@cms0/auth",
+  "version": "0.3.0",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./client": {
+        "types": "./dist/client.d.ts",
+        "default": "./dist/client.js"
+      },
+      "./permissions": {
+        "types": "./dist/permissions.d.ts",
+        "default": "./dist/permissions.js"
+      }
+    }
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./dist/client.js"
+    },
+    "./permissions": {
+      "types": "./src/permissions.ts",
+      "default": "./dist/permissions.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:clean && tsc -p tsconfig.json",
+    "build:clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true });\"",
+    "prepack": "pnpm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project auth-unit",
+    "test": "pnpm test:unit"
+  },
+  "dependencies": {
+    "@better-auth/api-key": "^1.6.9",
+    "better-auth": "^1.6.9",
+    "drizzle-orm": "^0.44.7",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10"
+  },
+  "license": "Apache-2.0"
+}

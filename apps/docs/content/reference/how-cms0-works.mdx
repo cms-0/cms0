@@ -1,0 +1,57 @@
+---
+title: How cms0 works
+description: The content flow from TypeScript schema to edited runtime content.
+---
+
+import { Callout, Steps } from "nextra/components";
+
+cms0 keeps the content contract in your app code.
+
+## Flow
+
+<Steps>
+
+### Define a schema
+
+You define a TypeScript schema in the file that calls `cms0<T>()`.
+
+### Publish a descriptor
+
+The CLI reads that file, creates a descriptor, and publishes it to a hosted environment or self-hosted admin.
+
+### Edit content
+
+cms0 builds editor screens and runtime routes from the descriptor.
+
+### Read from the app
+
+Your app reads saved content through the typed client from `@cms0/cms0`.
+
+</Steps>
+
+## Why the schema starts in code
+
+The TypeScript schema gives your app and the editor the same contract.
+
+That keeps common failures visible during development:
+
+- renamed fields
+- missing required content
+- collection shape changes
+- rich field type changes
+
+## Hosted and self-hosted
+
+Hosted workspace users manage projects and environments in the cms0 app.
+
+Self-hosted users run `@cms0/admin` and point apps directly at that admin runtime.
+
+The app integration model is the same in both cases: one API base URL and one API key.
+
+<Callout type="info">
+  Moving between hosted and self-hosted changes the runtime URL, not the `@cms0/cms0` app integration pattern.
+</Callout>
+
+## Success check
+
+If a field exists in TypeScript, appears in the admin UI, and can be read from your app, the full cms0 loop is working.

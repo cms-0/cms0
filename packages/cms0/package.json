@@ -1,0 +1,143 @@
+{
+  "name": "@cms0/cms0",
+  "version": "0.3.0",
+  "description": "",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/cjs/index.cjs",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/types/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/types/index.d.ts",
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.cjs"
+      },
+      "./config": {
+        "types": "./dist/types/config.d.ts",
+        "import": "./dist/esm/config.js",
+        "require": "./dist/cjs/config.cjs"
+      },
+      "./libs/cli": {
+        "types": "./dist/types/libs/cli/index.d.ts",
+        "import": "./dist/esm/libs/cli/index.js",
+        "require": "./dist/cjs/libs/cli/index.cjs"
+      },
+      "./schema-descriptors": {
+        "types": "./dist/types/schema-descriptors.d.ts",
+        "import": "./dist/esm/schema-descriptors.js",
+        "require": "./dist/cjs/schema-descriptors.cjs"
+      },
+      "./custom-types": {
+        "types": "./dist/types/custom-types/index.d.ts",
+        "import": "./dist/esm/custom-types/index.js",
+        "require": "./dist/cjs/custom-types/index.cjs"
+      },
+      "./generated/schema-descriptor": {
+        "types": "./dist/types/generated/schema-descriptor.d.ts",
+        "import": "./dist/esm/generated/schema-descriptor.js",
+        "require": "./dist/cjs/generated/schema-descriptor.cjs"
+      },
+      "./provenance": {
+        "types": "./dist/types/provenance.d.ts",
+        "import": "./dist/esm/provenance.js",
+        "require": "./dist/cjs/provenance.cjs"
+      },
+      "./responsive-break.css": {
+        "style": "./src/responsive-break.css",
+        "default": "./src/responsive-break.css"
+      }
+    }
+  },
+  "type": "module",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./src/index.ts",
+  "bin": {
+    "cms0": "./bin/cms0.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "import": "./dist/esm/config.js",
+      "require": "./dist/cjs/config.cjs"
+    },
+    "./libs/cli": {
+      "types": "./src/libs/cli/index.ts",
+      "import": "./dist/esm/libs/cli/index.js",
+      "require": "./dist/cjs/libs/cli/index.cjs"
+    },
+    "./schema-descriptors": {
+      "types": "./src/schema-descriptors.ts",
+      "import": "./dist/esm/schema-descriptors.js",
+      "require": "./dist/cjs/schema-descriptors.cjs"
+    },
+    "./custom-types": {
+      "types": "./src/custom-types/index.ts",
+      "import": "./dist/esm/custom-types/index.js",
+      "require": "./dist/cjs/custom-types/index.cjs"
+    },
+    "./generated/schema-descriptor": {
+      "types": "./src/generated/schema-descriptor.ts",
+      "import": "./dist/esm/generated/schema-descriptor.js",
+      "require": "./dist/cjs/generated/schema-descriptor.cjs"
+    },
+    "./provenance": {
+      "types": "./src/provenance.ts",
+      "import": "./dist/esm/provenance.js",
+      "require": "./dist/cjs/provenance.cjs"
+    },
+    "./responsive-break.css": {
+      "style": "./src/responsive-break.css",
+      "default": "./src/responsive-break.css"
+    }
+  },
+  "scripts": {
+    "dev": "pnpm run dev:setup && pnpm run dev:esm",
+    "dev:setup": "pnpm -C ../shared run dev:setup && node ./scripts/ensure-generated-schema-descriptor.cjs",
+    "dev:cli": "tsx src/cli.ts dev",
+    "dev:esm": "tsc -w -p tsconfig.json --preserveWatchOutput",
+    "dev:cjs": "node -e \"const chokidar=require('chokidar');const {execFileSync}=require('node:child_process');const path=require('node:path');const pkgRoot=process.cwd();const watchTargets=[path.join(pkgRoot,'src'),path.join(pkgRoot,'tsconfig.cjs.json'),path.join(pkgRoot,'finalize-build.cjs'),path.join(pkgRoot,'scripts','ensure-generated-schema-descriptor.cjs')];let running=false;let queued=false;const rebuild=()=>{if(running){queued=true;return;}running=true;do{queued=false;try{execFileSync('pnpm',['run','build:cjs'],{cwd:pkgRoot,stdio:'inherit'});execFileSync(process.execPath,['./finalize-build.cjs'],{cwd:pkgRoot,stdio:'inherit'});console.log('[cms0] rebuilt cjs output');}catch(error){console.error('[cms0] cjs rebuild failed');}}while(queued);running=false;};const watcher=chokidar.watch(watchTargets,{ignoreInitial:true});watcher.on('all',(_event,changedPath)=>{console.log('[cms0] change detected: '+path.relative(pkgRoot,changedPath));rebuild();});rebuild();const stop=()=>{watcher.close().finally(()=>process.exit(0));};process.on('SIGINT',stop);process.on('SIGTERM',stop);\"",
+    "cms0:build": "tsx src/cli.ts build",
+    "cms0:watch": "tsx src/cli.ts watch",
+    "watch:types": "tsc --watch -p tsconfig.json",
+    "build": "pnpm run build:clean && pnpm run build:prepare && pnpm run build:esm && pnpm run build:cjs && pnpm run build:finalize",
+    "build:clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true });\"",
+    "build:prepare": "pnpm -C ../shared build && node ./scripts/ensure-generated-schema-descriptor.cjs",
+    "build:esm": "tsc -p tsconfig.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:finalize": "node ./finalize-build.cjs",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "prepack": "pnpm run build:pack",
+    "build:pack": "pnpm run build:prepare && pnpm run build:esm && pnpm run build:cjs && pnpm run build:finalize",
+    "typecheck:prepare": "node ./scripts/ensure-generated-schema-descriptor.cjs",
+    "typecheck": "pnpm run typecheck:prepare && tsc -p tsconfig.json --noEmit",
+    "test:unit": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project cms0-unit",
+    "test:integration": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project cms0-integration"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src/responsive-break.css"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.8.1",
+  "dependencies": {
+    "@cms0/shared": "workspace:*",
+    "chokidar": "^4.0.3",
+    "ts-morph": "^27.0.2",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@cms0/typescript-config": "workspace:*",
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6"
+  }
+}

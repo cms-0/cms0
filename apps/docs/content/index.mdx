@@ -1,0 +1,110 @@
+---
+title: Overview
+description: Official documentation for cms0.
+---
+
+import { Callout, Cards, Steps } from "nextra/components";
+import {
+  AppIntegrationIcon,
+  ContentIcon,
+  HostedIcon,
+  ReferenceIcon,
+  SelfHostingIcon,
+  StartIcon,
+} from "../components/doc-icons";
+
+cms0 is a type-first content system for JavaScript and TypeScript apps.
+
+You define content in code, publish that shape into cms0, edit content in the admin UI, and read the result from your app through `@cms0/cms0`.
+
+<Callout type="info">
+  If you are setting up cms0 for the first time, use [Start here](/getting-started). It connects the workspace, schema, editor, and app in one pass.
+</Callout>
+
+<Cards num={2}>
+  <Cards.Card
+    title="Start here"
+    href="/getting-started"
+    icon={<StartIcon />}
+    arrow
+  />
+  <Cards.Card
+    title="Self-hosting"
+    href="/self-hosting"
+    icon={<SelfHostingIcon />}
+    arrow
+  />
+  <Cards.Card
+    title="Hosted workspace"
+    href="/hosted-workspace"
+    icon={<HostedIcon />}
+    arrow
+  />
+  <Cards.Card
+    title="App integration"
+    href="/app-integration"
+    icon={<AppIntegrationIcon />}
+    arrow
+  />
+  <Cards.Card
+    title="Content modeling"
+    href="/content-modeling"
+    icon={<ContentIcon />}
+    arrow
+  />
+  <Cards.Card
+    title="Reference"
+    href="/reference"
+    icon={<ReferenceIcon />}
+    arrow
+  />
+  <Cards.Card
+    title="License"
+    href="/license"
+    icon={<ReferenceIcon />}
+    arrow
+  />
+</Cards>
+
+## How cms0 fits together
+
+cms0 has four main parts:
+
+- `@cms0/cms0`: the package you install in your app. It provides the typed client and the `cms0` CLI.
+- `@cms0/admin`: the admin app for self-hosted teams.
+- The hosted workspace: the cms0 app for organizations, projects, environments, billing, and limits.
+- Your database and storage: Postgres plus filesystem or S3-compatible storage for saved content, snapshots, and assets.
+
+Hosted and self-hosted setups use the same core loop:
+
+<Steps>
+
+### Create or open a runtime
+
+Use a hosted project environment or a running `@cms0/admin` runtime.
+
+### Create an API key
+
+Use the endpoint and key from that runtime in your app and CLI config.
+
+### Define content with TypeScript
+
+Call `cms0<T>()` from your app schema file and keep the shape stable once content is live.
+
+### Publish and edit
+
+Run `cms0 dev` locally or `cms0 build` in CI, then edit the published schema in cms0.
+
+### Read content from your app
+
+Use the typed accessors returned by `cms0<T>()`.
+
+</Steps>
+
+## Pick a path
+
+- Use [Start here](/getting-started) if you want the shortest working path.
+- Use [Hosted workspace](/hosted-workspace) if you already have an account and need to find projects, environments, API keys, or endpoint URLs.
+- Use [Self-hosting](/self-hosting) if you run `@cms0/admin` yourself.
+- Use [App integration](/app-integration) if you are wiring cms0 into an existing app.
+- Use [License](/license) if you need to understand which parts are Apache-2.0 and which parts are AGPL-3.0-or-later.

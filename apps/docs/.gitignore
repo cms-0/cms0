@@ -1,0 +1,26 @@
+# Dependencies and caches
+node_modules
+.pnpm-store
+.turbo
+.cache
+.temp
+.tmp
+
+# Build artifacts
+dist
+build
+.next
+out
+public/_pagefind
+*.tsbuildinfo
+*.tsbuildinfo.tmp
+
+# Env and config
+.env
+.env.*
+!.env.example
+
+# Editors/OS
+.vscode
+.idea
+.DS_Store

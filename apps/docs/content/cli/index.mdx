@@ -1,0 +1,65 @@
+---
+title: Commands
+description: Use the cms0 CLI from @cms0/cms0.
+---
+
+import { Callout, Cards } from "nextra/components";
+
+The `cms0` binary ships with `@cms0/cms0`.
+
+It reads `cms0.config.*`, builds a schema descriptor from the configured entry
+file, writes generated descriptor and TypeScript augmentation files under
+`.cms0/generated`, and publishes the schema when an API base URL is configured.
+
+<Cards num={3}>
+  <Cards.Card title="Local dev" href="#cms0-dev" arrow />
+  <Cards.Card title="Watcher" href="#cms0-watch" arrow />
+  <Cards.Card title="CI build" href="#cms0-build" arrow />
+</Cards>
+
+<Callout type="info">
+  `cms0 dev`, `cms0 watch`, and `cms0 build` are the current public CLI modes.
+</Callout>
+
+## `cms0 dev`
+
+Use this while building locally.
+
+```bash filename="Terminal"
+pnpm exec cms0 dev
+```
+
+`dev` builds once, writes local descriptor types for editor inference, starts a
+browser descriptor sidecar, and watches the entry file for changes.
+
+## `cms0 watch`
+
+Use this when you want the watcher behavior without treating it as the main dev command.
+
+```bash filename="Terminal"
+pnpm exec cms0 watch
+```
+
+`watch` builds once, writes local descriptor types, starts the descriptor
+sidecar, and rebuilds when the entry file changes.
+
+## `cms0 build`
+
+Use this in CI or before deploying.
+
+```bash filename="Terminal"
+pnpm exec cms0 build
+```
+
+`build` creates the bundled descriptor output, writes local descriptor types, and
+publishes it to the configured runtime.
+
+## Use a custom config file
+
+```bash filename="Terminal"
+pnpm exec cms0 build --config ./cms0.config.ts
+```
+
+## Success check
+
+The command is working when it finds your config, resolves the entry file, and publishes the schema to the runtime shown by `CMS0_API_BASE_URL`.

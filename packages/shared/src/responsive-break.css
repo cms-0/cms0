@@ -1,0 +1,65 @@
+/*
+  cms0 responsive break contract:
+  - mode is persisted on each <br> via data-cms0-break
+  - default Tailwind breakpoints:
+    sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px
+  - cms0 semantic aliases:
+    mobile-only: 0..<md
+    tablet-only: md..<lg
+    desktop-only: lg+
+*/
+
+br[data-cms0-break="mobile-only"],
+br[data-cms0-break="tablet-only"],
+br[data-cms0-break="desktop-only"],
+br[data-cms0-break="sm-only"],
+br[data-cms0-break="md-only"],
+br[data-cms0-break="lg-only"],
+br[data-cms0-break="xl-only"],
+br[data-cms0-break="2xl-only"] {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  br[data-cms0-break="mobile-only"] {
+    display: revert;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767.98px) {
+  br[data-cms0-break="sm-only"] {
+    display: revert;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  br[data-cms0-break="tablet-only"],
+  br[data-cms0-break="md-only"] {
+    display: revert;
+  }
+}
+
+@media (min-width: 1024px) {
+  br[data-cms0-break="desktop-only"],
+  br[data-cms0-break="lg-only"] {
+    display: revert;
+  }
+}
+
+@media (min-width: 1280px) {
+  br[data-cms0-break="lg-only"] {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1535.98px) {
+  br[data-cms0-break="xl-only"] {
+    display: revert;
+  }
+}
+
+@media (min-width: 1536px) {
+  br[data-cms0-break="2xl-only"] {
+    display: revert;
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@cms0/example-artist-portfolio",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"pnpm cms0:dev\" \"next dev --port 3010\"",
+    "cms0:dev": "cms0 dev",
+    "cms0:build": "cms0 build",
+    "build": "pnpm cms0:build && next build",
+    "start": "next start -p 3010",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cms0/cms0": "workspace:*",
+    "dotenv": "^17.2.3",
+    "next": "16.2.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.4",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "16.2.2",
+    "typescript": "^5.9.3"
+  },
+  "license": "AGPL-3.0-or-later"
+}

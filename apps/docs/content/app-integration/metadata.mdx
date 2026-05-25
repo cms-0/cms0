@@ -1,0 +1,49 @@
+---
+title: Metadata
+description: Convert cms0 SEO content into framework metadata.
+---
+
+import { Callout } from "nextra/components";
+
+`@cms0/cms0` includes SEO helpers for content modeled with the built-in `Seo` type.
+
+<Callout type="info">
+  Keep the `Seo` field optional in your schema so pages can render before editors finish metadata.
+</Callout>
+
+## Model SEO content
+
+```ts filename="src/cms0.ts" {11-16}
+import { cms0, toNextMetadata } from "@cms0/cms0";
+import type { Seo } from "@cms0/cms0/custom-types";
+
+type RootSchema = {
+  homePage: {
+    seo?: Seo;
+  };
+};
+
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Use with Next.js metadata
+
+```ts filename="app/page.tsx" {5-8}
+import type { Metadata } from "next";
+import { toNextMetadata } from "@cms0/cms0";
+import { cms } from "./cms0";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const homePage = await cms.homePage();
+  return toNextMetadata<Metadata>(homePage.seo, { locale: "en" });
+}
+```
+
+## Success check
+
+Update SEO fields in cms0, refresh the page, and confirm the generated page metadata changes.

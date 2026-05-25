@@ -1,0 +1,41 @@
+---
+title: Triggers
+description: Run operational actions from cms0 after content changes.
+---
+
+import { Callout } from "nextra/components";
+
+Triggers are buttons in the admin UI that call external URLs.
+
+Use them for actions editors need to start manually, such as:
+
+- rebuilding a static site
+- purging a cache
+- syncing content to another service
+- notifying a downstream workflow
+
+<Callout type="warning">
+  Trigger targets should be idempotent when possible. Editors may retry a failed run.
+</Callout>
+
+## Create a trigger
+
+1. Open **Settings > Triggers**.
+2. Create a trigger.
+3. Add a clear name and button label.
+4. Enter the target URL.
+5. Save and run it once.
+
+## Keep trigger labels concrete
+
+Good labels tell the editor what will happen:
+
+- `Rebuild marketing site`
+- `Purge production cache`
+- `Sync catalog`
+
+Avoid labels such as `Submit`, `Run`, or `Execute`.
+
+## Success check
+
+The trigger is ready when the admin UI shows a successful run and the downstream system receives the request.

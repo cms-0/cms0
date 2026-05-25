@@ -1,0 +1,45 @@
+---
+title: Billing and limits
+description: Understand plans, add-ons, and usage views in the hosted workspace.
+---
+
+import { Callout, Cards } from "nextra/components";
+
+Billing belongs to the organization. Projects and environments consume that organization's included limits and add-ons.
+
+<Cards num={2}>
+  <Cards.Card title="Billing" href="#where-to-look" arrow />
+  <Cards.Card title="Limits" href="#what-usage-includes" arrow />
+</Cards>
+
+## Where to look
+
+- **Settings > Billing**: plan, checkout, portal access, and pending plan changes.
+- **Settings > Limits**: current account limits and usage capacity.
+- **Project > Usage**: project-level usage.
+- **Environment > Usage**: environment-level usage when available for that environment.
+
+## What usage includes
+
+Usage views can include:
+
+- API calls
+- read and write activity
+- bandwidth
+- storage
+- content counts
+- schema size and publish activity
+
+Storage usage is collected by the storage snapshot worker, so very recent uploads may take a short time to appear in graphs.
+
+<Callout type="info">
+  Usage graphs can lag behind recent activity. Storage charts update after the storage snapshot worker records the latest totals.
+</Callout>
+
+## Plan changes
+
+Upgrades usually apply immediately. Downgrades can be scheduled for the end of the current billing period when the change would reduce active capacity.
+
+## Success check
+
+After setup, the organization limits page should show your current plan and the project usage page should reflect environment activity after traffic or content changes are recorded.

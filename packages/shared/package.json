@@ -1,0 +1,49 @@
+{
+  "name": "@cms0/shared",
+  "version": "0.3.0",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./responsive-break.css": {
+        "style": "./src/responsive-break.css",
+        "default": "./src/responsive-break.css"
+      }
+    }
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./responsive-break.css": {
+      "style": "./src/responsive-break.css",
+      "default": "./src/responsive-break.css"
+    }
+  },
+  "files": [
+    "dist",
+    "src/responsive-break.css"
+  ],
+  "scripts": {
+    "build": "pnpm run build:clean && tsc -p tsconfig.json",
+    "build:clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true });\"",
+    "prepack": "pnpm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project shared-unit",
+    "test": "pnpm test:unit"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "license": "Apache-2.0"
+}

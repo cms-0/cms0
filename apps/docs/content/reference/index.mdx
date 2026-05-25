@@ -1,0 +1,38 @@
+---
+title: Reference
+description: Runtime API, package surfaces, and system flow.
+---
+
+import { Cards } from "nextra/components";
+import { HostedEnvironmentEndpointExamples } from "../../components/hosted-environment-endpoint-examples";
+
+Use this section when you need exact surfaces rather than a setup guide.
+
+<Cards num={2}>
+  <Cards.Card title="Runtime API" href="/reference/runtime-api" arrow />
+  <Cards.Card title="How cms0 works" href="/reference/how-cms0-works" arrow />
+</Cards>
+
+## Main surfaces
+
+- `@cms0/cms0`: app package, typed client, CLI, custom types, SEO helpers.
+- `@cms0/admin`: self-hosted admin app and runtime API.
+- Hosted workspace: organization, project, environment, endpoint, billing, and usage management.
+
+## Runtime endpoints
+
+The runtime API is exposed from hosted environments:
+
+<HostedEnvironmentEndpointExamples />
+
+Self-hosted admin runtimes expose the same API category under the admin origin:
+
+```txt filename="Self-hosted runtime base URL"
+https://admin.example.com/api/content
+```
+
+Use the URL shown in cms0 rather than guessing the shape.
+
+## Success check
+
+If you need setup steps, start with [Start here](/getting-started). If you need endpoint categories, continue to [Runtime API](/reference/runtime-api).

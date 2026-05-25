@@ -1,0 +1,65 @@
+---
+title: Custom types
+description: Use the built-in cms0 field types for media, rich text, localization, and SEO.
+---
+
+import { Cards } from "nextra/components";
+
+`@cms0/cms0/custom-types` exports reusable field types that the CLI understands.
+
+Use them instead of rebuilding common content shapes by hand.
+
+<Cards num={3}>
+  <Cards.Card title="Media" href="#media" arrow />
+  <Cards.Card title="Rich text" href="#rich-text-and-localization" arrow />
+  <Cards.Card title="SEO" href="#seo" arrow />
+</Cards>
+
+## Common imports
+
+```ts filename="src/cms0.ts"
+import type {
+  File,
+  Image,
+  LocalizedRichText,
+  LocalizedString,
+  RichText,
+  Seo,
+  Video,
+} from "@cms0/cms0/custom-types";
+```
+
+## Media
+
+```ts filename="src/cms0.ts"
+type Hero = {
+  image: Image;
+  video?: Video;
+  download?: File;
+};
+```
+
+## Rich text and localization
+
+```ts filename="src/cms0.ts"
+type MarketingCopy = {
+  eyebrow: LocalizedString;
+  body: LocalizedRichText;
+  footnote?: RichText;
+};
+```
+
+## SEO
+
+```ts filename="src/cms0.ts"
+type PageContent = {
+  title: string;
+  seo?: Seo;
+};
+```
+
+`Seo` works with helpers such as `toNextMetadata`.
+
+## Success check
+
+Use custom types when the editor needs a richer control than a primitive string, number, or boolean. Keep ordinary fields ordinary.

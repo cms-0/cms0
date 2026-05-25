@@ -1,0 +1,68 @@
+---
+title: Editor workflow
+description: Edit content after a schema has been published.
+---
+
+import { Callout, Steps } from "nextra/components";
+
+Editors work inside the admin UI for a hosted environment or self-hosted admin.
+
+The content screens are generated from the schema published by `@cms0/cms0`.
+
+<Callout type="info">
+  Editors only see roots and collections after the CLI publishes the schema for that runtime.
+</Callout>
+
+## Edit a root
+
+Roots are singleton content entries, such as `homePage` or `siteSettings`.
+
+<Steps>
+
+### Open the environment admin UI
+
+Use the hosted environment page or your self-hosted admin origin.
+
+### Choose the root
+
+Select a singleton root such as `homePage` or `siteSettings`.
+
+### Edit and save
+
+Update fields, save, then refresh the app page that reads that root.
+
+</Steps>
+
+## Edit a collection
+
+Collections come from array fields in your schema.
+
+<Steps>
+
+### Open the collection
+
+Collections come from array fields in the TypeScript schema.
+
+### Create or open an entry
+
+Fill required fields and save.
+
+### Read from the app
+
+Use the entry ID, collection list, or collection filters from your app.
+
+</Steps>
+
+## Publish schema changes
+
+Content screens change after the CLI publishes a new schema:
+
+```bash filename="Terminal"
+pnpm exec cms0 build
+```
+
+Use `cms0 dev` while developing so the schema updates as your entry file changes.
+
+## Success check
+
+A content change is complete when the admin UI saves it and the app reads the updated value through `@cms0/cms0`.

@@ -1,0 +1,54 @@
+{
+  "name": "@cms0/admin-server",
+  "version": "0.3.0",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:clean && tsc -p tsconfig.json",
+    "build:clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true });\"",
+    "prepack": "pnpm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project admin-server-unit",
+    "test:integration": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project admin-server-integration",
+    "test": "pnpm test:unit && pnpm test:integration"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1035.0",
+    "@cms0/admin-contract": "workspace:*",
+    "@cms0/auth": "workspace:*",
+    "@cms0/db-schema-ops": "workspace:*",
+    "@cms0/shared": "workspace:*",
+    "drizzle-orm": "^0.44.7",
+    "lodash": "^4.17.21",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.21",
+    "@types/node": "^24.10.0",
+    "@types/pg": "^8.15.4"
+  },
+  "license": "AGPL-3.0-or-later"
+}

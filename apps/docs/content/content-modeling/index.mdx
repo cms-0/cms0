@@ -1,0 +1,63 @@
+---
+title: Schema design
+description: Model cms0 content with TypeScript types.
+---
+
+import { Callout } from "nextra/components";
+
+cms0 schemas start as TypeScript.
+
+The CLI reads the file configured as `entry`, finds the `cms0<T>()` call, builds a descriptor, and publishes that descriptor to the selected runtime.
+
+<Callout type="info">
+  Treat field names as content contracts. Rename fields deliberately once editors have saved production content.
+</Callout>
+
+## Good schema habits
+
+- Name roots after product concepts, such as `homePage`, `pricingPage`, or `siteSettings`.
+- Use arrays for repeated content that editors manage as collections.
+- Keep field names stable once content is live.
+- Use optional fields when editors can safely omit content.
+- Use built-in custom types for images, rich text, files, localized values, and SEO.
+- Keep secrets and operational state out of content.
+
+## Example
+
+```ts filename="src/cms0.ts" {15-20}
+import { cms0 } from "@cms0/cms0";
+import type { Image, LocalizedString, Seo } from "@cms0/cms0/custom-types";
+
+type Article = {
+  title: string;
+  slug: string;
+  summary?: LocalizedString;
+  coverImage?: Image;
+};
+
+type RootSchema = {
+  homePage: {
+    headline: string;
+    seo?: Seo;
+  };
+  articles: Article[];
+};
+
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Changing a live schema
+
+1. Add new fields before removing old fields.
+2. Deploy app code that tolerates both shapes.
+3. Backfill content in cms0.
+4. Remove old fields after the new shape is live.
+
+## Success check
+
+After `pnpm exec cms0 build`, the admin UI should show your roots and collections with field labels that match the TypeScript shape.

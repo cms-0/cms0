@@ -1,0 +1,84 @@
+---
+title: Common issues
+description: Fix common cms0 setup and runtime problems.
+---
+
+import { Callout } from "nextra/components";
+
+<Callout type="info">
+  Most setup issues come from using a key or endpoint from one environment while editing another.
+</Callout>
+
+## The CLI cannot find a config file
+
+Run the command from your app root or pass a config path:
+
+```bash filename="Terminal"
+pnpm exec cms0 build --config ./cms0.config.ts
+```
+
+The CLI looks for `cms0.config.ts`, `cms0.config.js`, `cms0.config.mjs`, `cms0.config.cjs`, and `cms0.config.json`.
+
+## The CLI cannot find `cms0<T>()`
+
+Check the `entry` field in `cms0.config.ts`.
+
+```ts filename="cms0.config.ts" {2-9}
+export default defineConfig({
+  entry: "./src/cms0.ts",
+  api: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+The entry file must contain the schema call:
+
+```ts filename="src/cms0.ts"
+export const cms = cms0<RootSchema>({ ... });
+```
+
+## Schema publishing does not reach cms0
+
+Check:
+
+- `CMS0_API_BASE_URL` points at the runtime API base URL, not the marketing site.
+- `CMS0_API_KEY` is present in the shell running the CLI.
+- the key has schema publish permission.
+- the runtime health endpoint is reachable from your machine or CI runner.
+
+## The app reads old content
+
+Check:
+
+- the app is using the same base URL as the environment you edited
+- the content was saved in the admin UI
+- the deployment has the current environment variables
+- any framework cache or static generation layer has been refreshed
+
+## Browser code exposes an API key
+
+Move private cms0 reads to server code when possible.
+
+For client-side reads, use only keys that are intentionally scoped for browser exposure.
+
+## Self-hosted admin fails at startup
+
+Check:
+
+- `DATABASE_URL`
+- `CMS0_PUBLIC_APP_URL`
+- `BETTER_AUTH_URL`
+- `BETTER_AUTH_SECRET`
+- `TRUSTED_ORIGINS`
+- `CMS0_STORAGE_DRIVER`
+- storage-specific variables for filesystem or S3
+
+If the app starts but account creation fails, confirm the user is using a valid
+pending team invitation. Self-hosted signup is invite-only after the bootstrap
+admin account is created.
+
+## Success check
+
+After fixing an issue, run `pnpm exec cms0 build`, open the admin UI, save content, and confirm your app reads the updated value.

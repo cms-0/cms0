@@ -1,0 +1,62 @@
+---
+title: Hosted workspace
+description: Use the cms0 app to manage organizations, projects, environments, billing, and runtime access.
+---
+
+import { Callout, Cards, Steps } from "nextra/components";
+
+The hosted workspace is where you manage cms0 without running the admin app yourself.
+
+You use it to create projects, split work into environments, copy runtime endpoints, manage API keys, invite team members, and track usage.
+
+<Cards num={2}>
+  <Cards.Card title="Projects and environments" href="/hosted-workspace/projects-environments" arrow />
+  <Cards.Card title="API keys and endpoints" href="/hosted-workspace/api-keys-endpoints" arrow />
+  <Cards.Card title="Billing and limits" href="/hosted-workspace/billing-limits" arrow />
+</Cards>
+
+## Workspace map
+
+- **Organization**: the billing and membership boundary.
+- **Project**: a product, site, or app using cms0.
+- **Environment**: an isolated runtime for a project, such as production, staging, or test.
+- **API key**: a credential your app or CLI uses to publish schema and read/write content.
+- **Endpoint**: the URL your app passes to `@cms0/cms0`.
+
+## Common path
+
+<Steps>
+
+### Create or select an organization
+
+The organization controls members, billing, projects, and account limits.
+
+### Create a project
+
+Use one project per product, site, or app.
+
+### Add environments
+
+Use environments for production, staging, test, or preview isolation.
+
+### Copy the endpoint and create a key
+
+Put the environment endpoint in `CMS0_API_BASE_URL` and the key in `CMS0_API_KEY`.
+
+### Publish the schema
+
+Run `cms0 dev` locally or `cms0 build` from CI.
+
+</Steps>
+
+<Callout type="info">
+  Endpoint and API key values are environment-specific. Keep production apps pointed at production environments.
+</Callout>
+
+## Success check
+
+You have the right workspace setup when your app has:
+
+- one environment endpoint in `CMS0_API_BASE_URL`
+- one API key in `CMS0_API_KEY`
+- a schema visible in the environment admin UI after running the CLI

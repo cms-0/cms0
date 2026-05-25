@@ -1,0 +1,74 @@
+---
+title: Configuration
+description: Configure the cms0 CLI with cms0.config.*.
+---
+
+import { Callout, FileTree } from "nextra/components";
+
+The CLI searches upward from the current working directory for:
+
+- `cms0.config.ts`
+- `cms0.config.js`
+- `cms0.config.mjs`
+- `cms0.config.cjs`
+- `cms0.config.json`
+
+<FileTree>
+  <FileTree.Folder name="your-app" defaultOpen>
+    <FileTree.File name="cms0.config.ts" />
+    <FileTree.Folder name="src" defaultOpen>
+      <FileTree.File name="cms0.ts" />
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+## Recommended config
+
+```ts filename="cms0.config.ts" {5-12}
+import "dotenv/config";
+import { defineConfig } from "@cms0/cms0/config";
+
+export default defineConfig({
+  entry: "./src/cms0.ts",
+  api: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Fields
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `entry` | Yes | File that calls `cms0<T>()`, relative to the config file |
+| `tsconfig` | No | TypeScript config used for schema analysis |
+| `api.baseUrl` | No | Runtime API base URL; when set, the CLI publishes the schema |
+| `api.key` | No | API key sent as `Authorization: Bearer ...` during publish |
+
+## Config and runtime client
+
+The CLI config and runtime client usually read the same URL and key:
+
+```ts filename="src/cms0.ts" {2-7}
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Success check
+
+Run:
+
+```bash filename="Terminal"
+pnpm exec cms0 build
+```
+
+If the config is valid, the CLI resolves the entry file and publishes the generated schema.
+
+<Callout type="info">
+  If you need a different schema file per app, keep each app's `cms0.config.ts` next to that app's package manifest and run the CLI from that directory.
+</Callout>

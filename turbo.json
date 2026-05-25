@@ -1,0 +1,100 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": [
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "CMS0_PUBLIC_APP_URL",
+    "TRUSTED_ORIGINS",
+    "DATABASE_URL",
+    "CMS0_STORAGE_DRIVER",
+    "CMS0_STORAGE_PATH",
+    "CMS0_STORAGE_BUCKET",
+    "CMS0_STORAGE_REGION",
+    "CMS0_STORAGE_ENDPOINT",
+    "CMS0_STORAGE_ACCESS_KEY_ID",
+    "CMS0_STORAGE_SECRET_ACCESS_KEY",
+    "CMS0_STORAGE_FORCE_PATH_STYLE",
+    "CMS0_STORAGE_PREFIX",
+    "CMS0_BACKUPS_PATH",
+    "CMS0_BACKUPS_RETENTION",
+    "CMS0_EMAIL_TRANSPORT",
+    "CMS0_EMAIL_FROM",
+    "CMS0_EMAIL_FROM_NAME",
+    "CMS0_EMAIL_REPLY_TO",
+    "CMS0_EMAIL_REPLY_TO_NAME",
+    "CMS0_EMAIL_SMTP_HOST",
+    "CMS0_EMAIL_SMTP_PORT",
+    "CMS0_EMAIL_SMTP_SECURE",
+    "CMS0_EMAIL_SMTP_USERNAME",
+    "CMS0_EMAIL_SMTP_PASSWORD",
+    "CMS0_EMAIL_PLUNK_API_KEY",
+    "CMS0_EMAIL_PLUNK_BASE_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "CMS0_ADMIN_BASE_URL",
+    "CMS0_API_KEY",
+    "CMS0_AUTH_MODE",
+    "CMS0_ENVIRONMENT_KEY",
+    "NEXT_PUBLIC_CMS0_ADMIN_BASE_URL",
+    "NEXT_PUBLIC_CMS0_ENVIRONMENT_KEY",
+    "VITE_CMS0_ADMIN_BASE_URL",
+    "VITE_CMS0_API_KEY",
+    "VITE_CMS0_ENVIRONMENT_KEY",
+    "CMS0_DOCS_PUBLIC_URL",
+    "DOCS_REPOSITORY_BASE",
+    "PROJECT_REPOSITORY_LINK",
+    "AUTH_DISABLED",
+    "NEXT_PUBLIC_CMS0_DOCS_BASE_URL",
+    "NEXT_PUBLIC_ENABLE_EMAIL"
+  ],
+  "tasks": {
+    "dev": {
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "dist/**",
+        "out/**"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [
+        "test:unit",
+        "test:integration"
+      ],
+      "outputs": []
+    },
+    "test:unit": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "test:integration": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ],
+      "outputs": []
+    }
+  }
+}

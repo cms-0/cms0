@@ -1,0 +1,76 @@
+---
+title: Deployment
+description: Deploy @cms0/admin with durable database and storage.
+---
+
+import { Callout, Tabs } from "nextra/components";
+
+A production self-hosted deployment should be boring: one admin app, one database, durable storage, and HTTPS.
+
+## Reference shape
+
+- `@cms0/admin` running as a Node/Next.js app
+- managed Postgres or a backed-up Postgres container
+- S3-compatible storage for uploads and snapshots, or a persistent filesystem volume
+- SMTP or Plunk for email
+- reverse proxy with TLS
+
+<Callout type="warning">
+  Do not deploy with disposable filesystem storage unless uploads, snapshots, and backups are written to a durable mounted volume.
+</Callout>
+
+## Filesystem storage
+
+Filesystem storage is useful for local development or a single-host deployment with persistent volumes.
+
+Set:
+
+```bash filename=".env"
+CMS0_STORAGE_DRIVER=filesystem
+CMS0_STORAGE_PATH=./storage
+```
+
+Mount the storage path to durable disk in production.
+
+## S3-compatible storage
+
+Use S3-compatible storage when the app can move between hosts or containers.
+
+Set:
+
+```bash filename=".env"
+CMS0_STORAGE_DRIVER=s3
+CMS0_STORAGE_BUCKET="cms0"
+CMS0_STORAGE_REGION="auto"
+CMS0_STORAGE_ENDPOINT="https://s3.example.com"
+CMS0_STORAGE_ACCESS_KEY_ID="..."
+CMS0_STORAGE_SECRET_ACCESS_KEY="..."
+CMS0_STORAGE_FORCE_PATH_STYLE=true
+```
+
+## Runtime URL examples
+
+<Tabs items={["Local", "Production"]}>
+  <Tabs.Tab>
+    ```txt filename="Local runtime URL"
+    http://localhost:3000/api/content
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```txt filename="Production runtime URL"
+    https://cms.example.com/api/content
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Before going live
+
+- Use HTTPS for `CMS0_PUBLIC_APP_URL` and `BETTER_AUTH_URL`.
+- Set `TRUSTED_ORIGINS` to the exact origins that can access auth flows.
+- Store secrets in your host or platform secret manager.
+- Create a backup and restore it in a non-production database.
+- Create a scoped API key for CI.
+
+## Success check
+
+Deployments are ready when sign-in, content reads, schema publishing, uploads, and backup restore all work through the public origin.

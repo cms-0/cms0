@@ -1,0 +1,88 @@
+---
+title: Runtime API
+description: Runtime endpoint categories used by @cms0/cms0 and the admin UI.
+---
+
+import { Callout } from "nextra/components";
+import { HostedEnvironmentEndpointExamples } from "../../components/hosted-environment-endpoint-examples";
+
+Most apps should use `@cms0/cms0` instead of calling the runtime API by hand.
+
+Use the raw API when you are debugging, integrating a non-JavaScript client, or checking runtime health.
+
+<Callout type="info">
+  Runtime API shape can depend on the published schema. Use the in-app API docs for exact request and response bodies.
+</Callout>
+
+## Base URL
+
+Hosted environment examples:
+
+<HostedEnvironmentEndpointExamples />
+
+Self-hosted admin runtimes use:
+
+```txt filename="Self-hosted runtime base URL"
+https://admin.example.com/api/content
+```
+
+## Common categories
+
+| Category | Purpose |
+| --- | --- |
+| `/health` | Runtime health check |
+| `/schema` | Schema publish and schema state |
+| `/content` | Content reads and writes |
+| `/_graph` | Graph-style content access used by the SDK |
+| `/backups` | Self-hosted backup operations |
+| `/triggers` | Self-hosted manual trigger operations |
+
+Hosted public environment endpoints intentionally expose a smaller public surface than the full self-hosted admin runtime.
+
+## Graph reads
+
+The SDK calls `GET /_graph/:path` for resolved reads. Graph query options are flat in the URL:
+
+```txt filename="Graph query example"
+/_graph/homePage?fields=seo&pageSize=full&seo.openGraph.images.pageSize=50
+```
+
+Supported global options:
+
+- `fields` and `exclude` project the returned document shape
+- `locale` reads localized values for one locale, or `all`
+- `page`, `pageSize`, `orderBy`, `orderDir`, and `search` apply recursively to graph-backed arrays
+- `maxDepth` limits recursive graph resolution
+- `resolveModelRefs=false` leaves model references unresolved
+
+`pageSize` accepts a positive number or `full`. Resolved graph reads default to `full` when no page size is provided.
+
+Use dot-path options for nested overrides. For example, `seo.openGraph.images.pageSize=50` overrides the global `pageSize` only for that nested array path.
+
+`POST /_graph/:path/_query` accepts the same graph options as JSON, including a `paths` object:
+
+```json filename="Graph query body"
+{
+  "fields": "seo",
+  "pageSize": "full",
+  "paths": {
+    "seo.openGraph.images": { "pageSize": 50 }
+  }
+}
+```
+
+## API docs UI
+
+The admin UI includes API documentation pages for the active runtime. Use those generated docs for exact request and response shapes because content routes are schema-driven.
+
+## Authentication
+
+API keys are sent as bearer tokens:
+
+```http filename="Authorization header"
+Authorization: Bearer cms0_...
+```
+
+## Success check
+
+The runtime is reachable when `GET /health` succeeds with the same base URL and API key your app will use.

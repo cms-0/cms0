@@ -1,0 +1,113 @@
+---
+title: Accessors
+description: Read and write content through the typed cms0 client.
+---
+
+import { Callout } from "nextra/components";
+
+The shape you pass to `cms0<T>()` becomes the shape of the client. The CLI
+also writes local descriptor types under `.cms0/generated`, so `data.models.*`
+is inferred from the same schema descriptor used by the runtime.
+
+```ts filename="src/example.ts"
+const homePage = await cms.homePage();
+const articles = await cms.articles();
+```
+
+<Callout type="info">
+  Accessors are generated from the TypeScript shape that the CLI publishes. If an accessor is missing, republish the schema.
+</Callout>
+
+## Root content
+
+Root content is a singleton.
+
+```ts filename="src/example.ts"
+const homePage = await cms.homePage();
+
+await cms.homePage.update({
+  headline: "A better headline",
+});
+```
+
+## Collections
+
+Root array fields expose array helpers for editing the root collection.
+
+```ts filename="src/example.ts"
+const articles = await cms.articles();
+
+await cms.articles.append({
+  title: "Launch notes",
+  slug: "launch-notes",
+});
+
+await cms.articles.at(0).update({
+  title: "Updated title",
+});
+```
+
+## Models
+
+Reusable model declarations are available under `cms.models`.
+
+```ts filename="src/example.ts"
+const articles = await cms.models.Article({
+  includeId: false,
+  query: {
+    pageSize: 100,
+    orderBy: "publishedAt",
+    orderDir: "desc",
+  },
+});
+
+const article = await cms.models.Article.byId("article_id");
+
+await cms.models.Article.create({
+  title: "Launch notes",
+  slug: "launch-notes",
+});
+
+await cms.models.Article.update("article_id", {
+  title: "Updated title",
+});
+
+await cms.models.Article.delete("article_id");
+```
+
+## Options
+
+Accessors accept read options:
+
+```ts filename="src/example.ts"
+const homePage = await cms.homePage({
+  fields: ["headline", "seo.title"],
+  exclude: ["seo.jsonLd"],
+  graph: {
+    pageSize: "full",
+    paths: {
+      "seo.openGraph.images": { pageSize: 50 },
+    },
+  },
+  includeId: true,
+  locale: "en",
+});
+```
+
+Use:
+
+- `fields` to include specific nested paths
+- `exclude` to remove specific nested paths
+- `graph.page`, `graph.pageSize`, `graph.orderBy`, `graph.orderDir`, and `graph.search` to control resolved graph arrays recursively
+- `graph.paths` to override graph controls for a nested dot path such as `seo.openGraph.images`
+- `includeId` to include cms0 object IDs
+- `locale` when reading localized content
+- `response: "envelope"` when you need response metadata
+
+`fields` and `exclude` control the returned shape. Graph pagination and sorting live under `graph` so a read like `cms.homePage({ fields: "seo", graph: { pageSize: "full" } })` applies the full page size to nested graph-backed arrays inside `seo`. Resolved root reads default to `graph.pageSize: "full"`.
+
+## Success check
+
+Accessor calls should match your TypeScript schema. If a root field or model
+does not exist on the client, run `cms0 dev` or `cms0 build` again and confirm
+the entry file in `cms0.config.ts` points at the file that calls `cms0<T>()`.

@@ -1,0 +1,66 @@
+---
+title: Projects and environments
+description: Create isolated hosted runtimes for your app.
+---
+
+import { Callout, Steps } from "nextra/components";
+
+Projects group related environments. Environments hold their own schema, content, runtime state, storage, and usage records.
+
+Use separate environments for work that should not share content:
+
+- `production` for live content
+- `staging` for release testing
+- `test` or `preview` for experiments
+
+<Callout type="info">
+  Use separate environments whenever the content, schema, API keys, or usage history should be isolated.
+</Callout>
+
+## Create a project
+
+<Steps>
+
+### Open Projects
+
+Choose **New project** from the hosted workspace.
+
+### Name the project
+
+Use the product, site, or app name editors will recognize.
+
+### Add the first environment
+
+Create at least one runtime environment before wiring your app.
+
+</Steps>
+
+cms0 creates the environment runtime and checks that it is ready before sending you to the environment page.
+
+## Add an environment
+
+<Steps>
+
+### Open the project
+
+Go to **Environments**.
+
+### Create the environment
+
+Enter a short, clear name such as `production`, `staging`, or `preview`.
+
+### Copy runtime values
+
+Use that environment's endpoint and API key in your app.
+
+</Steps>
+
+Each environment gets a generated key. That key appears in endpoint URLs and should be treated as part of your runtime address.
+
+## Delete an environment
+
+Deleting an environment removes its runtime state and related resources. Do this only after you have exported or backed up anything you still need.
+
+## Success check
+
+An environment is ready when its page shows a runtime endpoint and the environment can respond to a health request through that endpoint.

@@ -1,0 +1,31 @@
+cms0 Monorepo License Notice
+
+This repository contains multiple workspaces. Each workspace declares its own
+license in its local `LICENSE` file and, for npm packages, its `package.json`
+`license` field.
+
+Root-level files outside `apps/*`, `examples/*`, and `packages/*` are licensed
+under the Apache License, Version 2.0, unless a file or directory states
+otherwise.
+
+Workspace license map:
+
+- Apache License 2.0:
+  - `apps/docs`
+  - `examples/reproduce-bug`
+  - `packages/cms0`
+  - `packages/admin-client`
+  - `packages/admin-contract`
+  - `packages/api-docs`
+  - `packages/auth`
+  - `packages/shared`
+  - `packages/transactional`
+  - `packages/typescript-config`
+  - `packages/ui`
+- GNU Affero General Public License v3.0 or later:
+  - `apps/admin`
+  - `packages/admin-server`
+  - `packages/db-schema-ops`
+
+The `cms0` name, logos, and branding are not granted by these software
+licenses.

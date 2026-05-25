@@ -1,0 +1,109 @@
+---
+title: Environment variables
+description: Required and common @cms0/admin configuration.
+---
+
+import { Callout } from "nextra/components";
+
+`@cms0/admin` reads configuration from environment variables and fails early when required values are missing.
+
+<Callout type="important">
+  Put production secrets in your host or platform secret manager. Do not commit `.env` files.
+</Callout>
+
+## Core app
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `PORT` | No | App port |
+| `CMS0_PUBLIC_APP_URL` | Yes | Public admin origin |
+| `BETTER_AUTH_URL` | Yes | Auth origin, usually the same as `CMS0_PUBLIC_APP_URL` |
+| `BETTER_AUTH_SECRET` | Yes | Auth secret |
+| `TRUSTED_ORIGINS` | Yes | Comma-separated trusted origins |
+
+## Bootstrap admin
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `ADMIN_EMAIL` | Recommended | First admin email |
+| `ADMIN_PASSWORD` | Recommended | First admin password |
+| `ORG_NAME` | Yes | Organization name created for the first admin |
+
+Set both `ADMIN_EMAIL` and `ADMIN_PASSWORD` together. The app rejects partial bootstrap credentials.
+
+The bootstrap admin is created directly from `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+New operator accounts are invite-only after startup. Send a team invitation from
+the admin UI; email/password signup and Google signup both require a valid
+pending invitation whose email matches the account email.
+
+## Storage
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CMS0_STORAGE_DRIVER` | Yes | `filesystem` or `s3` |
+| `CMS0_STORAGE_PATH` | With filesystem | Filesystem storage root |
+| `CMS0_ASSET_BASE_URL` | Yes | Public base URL for uploaded runtime assets |
+
+## S3-compatible storage
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CMS0_STORAGE_BUCKET` | With `CMS0_STORAGE_DRIVER=s3` | Bucket name |
+| `CMS0_STORAGE_REGION` | With `CMS0_STORAGE_DRIVER=s3` | Bucket region |
+| `CMS0_STORAGE_ENDPOINT` | Optional | Custom endpoint for S3-compatible providers |
+| `CMS0_STORAGE_ACCESS_KEY_ID` | With `CMS0_STORAGE_DRIVER=s3` | Access key id |
+| `CMS0_STORAGE_SECRET_ACCESS_KEY` | With `CMS0_STORAGE_DRIVER=s3` | Secret access key |
+| `CMS0_STORAGE_FORCE_PATH_STYLE` | With S3 | Path-style toggle for compatible providers |
+| `CMS0_STORAGE_PREFIX` | Optional | Logical prefix inside the bucket |
+
+## Email
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CMS0_EMAIL_TRANSPORT` | Yes | `log`, `smtp`, or `plunk` |
+| `CMS0_EMAIL_FROM` | Recommended | Sender email |
+| `CMS0_EMAIL_FROM_NAME` | Optional | Sender display name |
+| `CMS0_EMAIL_REPLY_TO` | Optional | Reply-to email |
+| `CMS0_EMAIL_REPLY_TO_NAME` | Optional | Reply-to display name |
+
+## SMTP
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CMS0_EMAIL_SMTP_HOST` | With `CMS0_EMAIL_TRANSPORT=smtp` | SMTP host |
+| `CMS0_EMAIL_SMTP_PORT` | With SMTP | SMTP port |
+| `CMS0_EMAIL_SMTP_SECURE` | With SMTP | SMTP TLS toggle |
+| `CMS0_EMAIL_SMTP_USERNAME` | Optional | SMTP username |
+| `CMS0_EMAIL_SMTP_PASSWORD` | Optional | SMTP password |
+
+## Plunk
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CMS0_EMAIL_PLUNK_SECRET_KEY` | With `CMS0_EMAIL_TRANSPORT=plunk` | Plunk server-side secret key |
+| `CMS0_EMAIL_PLUNK_BASE_URL` | Optional | Custom Plunk API base URL |
+
+## OAuth
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `GOOGLE_CLIENT_ID` | Optional | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth client secret |
+
+When Google OAuth is configured, existing operators can continue with Google
+from the login page. New Google accounts are created only from a valid
+invitation link.
+
+## App integration values
+
+These values usually live in the app that consumes cms0, not in `@cms0/admin`:
+
+```bash filename=".env"
+CMS0_API_BASE_URL="https://admin.example.com/api/content"
+CMS0_API_KEY="cms0_..."
+```
+
+## Success check
+
+The admin app should start without missing-variable errors, and the public origin should serve both the UI and `/api/content/health`.

@@ -1,0 +1,104 @@
+---
+title: Next.js artist portfolio example
+description: Run the cms0 powered artist portfolio demo app.
+---
+
+import { Callout, Steps } from "nextra/components";
+
+The repository includes a complete Next.js SSR example at
+`examples/artist-portfolio`.
+
+It demonstrates:
+
+- root accessors for page content, header, footer, and SEO
+- collection accessors for artworks, blog posts, and contact submissions
+- `fields`, `graph.pageSize`, and collection query options
+- `toNextMetadata` for Next.js metadata
+- a server action that writes a contact submission through `@cms0/cms0`
+- placeholder rendering before editors add real content
+
+<Callout type="info">
+  The example can build without cms0 credentials. It uses local placeholders until
+  `CMS0_API_BASE_URL` and `CMS0_API_KEY` are configured.
+</Callout>
+
+<Steps>
+
+### Install dependencies
+
+From the repository root:
+
+```bash filename="Terminal"
+pnpm install
+```
+
+### Configure the example
+
+```bash filename="Terminal"
+cp examples/artist-portfolio/.env.example examples/artist-portfolio/.env.local
+```
+
+Edit `.env.local` after you create an API key in a cms0 runtime:
+
+```bash filename="examples/artist-portfolio/.env.local"
+CMS0_API_BASE_URL="http://localhost:3000/api/content"
+CMS0_API_KEY="cms0_..."
+CMS0_ASSET_BASE_URL="http://localhost:3000"
+```
+
+`CMS0_ASSET_BASE_URL` is optional. Use it when uploaded assets are served from a
+different origin than the content API.
+
+### Publish the schema
+
+```bash filename="Terminal"
+pnpm --filter @cms0/example-artist-portfolio cms0:build
+```
+
+Open the admin UI and fill:
+
+- `header`
+- `footer`
+- `homePage`
+- `galleryPage`
+- `aboutPage`
+- `contactPage`
+- `blogPage`
+- `artworks`
+- `blogPosts`
+
+### Run the website
+
+```bash filename="Terminal"
+pnpm --filter @cms0/example-artist-portfolio dev
+```
+
+Open `http://localhost:3010`.
+
+</Steps>
+
+## Validation
+
+Use the same commands the example uses in CI-style checks:
+
+```bash filename="Terminal"
+pnpm --filter @cms0/example-artist-portfolio typecheck
+pnpm --filter @cms0/example-artist-portfolio lint
+pnpm --filter @cms0/example-artist-portfolio build
+```
+
+## File map
+
+```txt
+examples/artist-portfolio/
+  app/
+  components/
+  data/cms0.ts
+  data/fallbacks.ts
+  lib/cms-content.ts
+  cms0.config.ts
+  next.config.ts
+```
+
+`data/cms0.ts` is the content contract. `lib/cms-content.ts` centralizes safe
+reads and fallbacks. Pages stay focused on rendering.

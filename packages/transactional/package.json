@@ -1,0 +1,68 @@
+{
+  "name": "@cms0/transactional",
+  "version": "0.3.0",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/src/index.js",
+    "types": "./dist/src/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/src/index.d.ts",
+        "import": "./dist/src/index.js",
+        "require": "./dist/src/index.js",
+        "default": "./dist/src/index.js"
+      },
+      "./*": {
+        "types": "./dist/src/*.d.ts",
+        "import": "./dist/src/*.js",
+        "require": "./dist/src/*.js"
+      }
+    }
+  },
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "pnpm run build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test:unit": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project transactional-unit",
+    "test": "pnpm test:unit"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js",
+      "default": "./dist/src/index.js"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "import": "./dist/src/*.js",
+      "require": "./dist/src/*.js",
+      "default": "./dist/src/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@cms0/shared": "workspace:*",
+    "@react-email/components": "^0.5.7",
+    "nodemailer": "^7.0.10"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/nodemailer": "^7.0.3",
+    "@types/react": "^19.2.4",
+    "@cms0/typescript-config": "workspace:*",
+    "react": "19.2.0",
+    "typescript": "^5.9.3"
+  },
+  "license": "Apache-2.0"
+}

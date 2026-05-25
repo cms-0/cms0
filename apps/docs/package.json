@@ -1,0 +1,44 @@
+{
+  "name": "@cms0/docs",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "files": [
+    "app",
+    "components",
+    "content",
+    "lib",
+    "public",
+    "mdx-components.tsx",
+    "next-env.d.ts",
+    "next.config.mjs",
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port \"${PORT:-3008}\" --webpack",
+    "build": "next build --webpack",
+    "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
+    "preview": "serve out --listen 3008",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project docs-unit",
+    "test:integration": "pnpm -C ../.. exec vitest run --config vitest.config.ts --project docs-integration",
+    "test": "pnpm test:unit && pnpm test:integration"
+  },
+  "dependencies": {
+    "next": "16.2.2",
+    "nextra": "4.6.1",
+    "nextra-theme-docs": "4.6.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@cms0/typescript-config": "workspace:*",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.4",
+    "pagefind": "^1.4.0",
+    "serve": "^14.2.4",
+    "typescript": "^5.9.3"
+  },
+  "license": "Apache-2.0"
+}

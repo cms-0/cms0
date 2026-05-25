@@ -1,0 +1,110 @@
+---
+title: App integration
+description: Install @cms0/cms0 and read typed content from an app.
+---
+
+import { Callout, FileTree } from "nextra/components";
+
+`@cms0/cms0` is the package you install in your app.
+
+It gives you:
+
+- the `cms0<T>()` typed runtime client
+- the `cms0` CLI
+- built-in custom types such as `Image`, `Seo`, and localized rich text
+- helpers such as `toNextMetadata`
+
+<Callout type="info">
+  Define your schema once, publish it with the CLI, then use the same typed client to read content at runtime.
+</Callout>
+
+## Install
+
+```bash filename="Terminal"
+pnpm add @cms0/cms0
+```
+
+## Define content in TypeScript
+
+<FileTree>
+  <FileTree.Folder name="your-app" defaultOpen>
+    <FileTree.File name="cms0.config.ts" />
+    <FileTree.Folder name="src" defaultOpen>
+      <FileTree.File name="cms0.ts" />
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+```ts filename="src/cms0.ts" {14-19}
+import { cms0 } from "@cms0/cms0";
+import type { Image, Seo } from "@cms0/cms0/custom-types";
+
+type Article = {
+  title: string;
+  slug: string;
+  coverImage?: Image;
+};
+
+type RootSchema = {
+  homePage: {
+    headline: string;
+    seo?: Seo;
+  };
+  articles: Article[];
+};
+
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Read content
+
+```ts filename="src/example.ts"
+const homePage = await cms.homePage();
+const articles = await cms.articles();
+const firstArticle = await cms.articles.byId("article_id");
+```
+
+## Mutate content when allowed
+
+```ts filename="src/actions.ts"
+await cms.homePage.update({
+  headline: "New homepage headline",
+});
+
+await cms.articles.create({
+  title: "Launch notes",
+  slug: "launch-notes",
+});
+```
+
+## Publish the schema
+
+Create `cms0.config.ts`:
+
+```ts filename="cms0.config.ts" {5-12}
+import "dotenv/config";
+import { defineConfig } from "@cms0/cms0/config";
+
+export default defineConfig({
+  entry: "./src/cms0.ts",
+  api: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+Then run:
+
+```bash filename="Terminal"
+pnpm exec cms0 dev
+```
+
+## Success check
+
+The integration is working when the schema appears in cms0 and `cms.homePage()` returns the content saved in the admin UI.

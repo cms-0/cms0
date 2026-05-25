@@ -1,0 +1,163 @@
+---
+title: Start here
+description: Set up cms0, publish a schema, edit content, and read it from an app.
+---
+
+import { Callout, FileTree, Steps, Tabs } from "nextra/components";
+import { HostedEnvironmentEndpointExamples } from "../../components/hosted-environment-endpoint-examples";
+
+This guide takes you through the full cms0 loop.
+
+You will create or open a runtime, publish a typed schema, edit content, and read it from a TypeScript app.
+
+<Callout type="info">
+  A runtime is either a hosted project environment or a self-hosted
+  `@cms0/admin` instance. The app integration code is the same after you have a
+  base URL and API key.
+</Callout>
+
+## What you need
+
+- Node.js 22 or newer.
+- A TypeScript app.
+- Access to a hosted cms0 workspace or a running self-hosted `@cms0/admin`.
+
+You will add these files to your app:
+
+<FileTree>
+  <FileTree.Folder name="your-app" defaultOpen>
+    <FileTree.File name="cms0.config.ts" />
+    <FileTree.Folder name="src" defaultOpen>
+      <FileTree.File name="cms0.ts" />
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+<Steps>
+
+### Create or open a runtime
+
+<Tabs items={["Hosted workspace", "Self-hosted admin"]}>
+  <Tabs.Tab>
+    Open the cms0 app, create an organization if needed, then create a project
+    with at least one environment.
+
+    Open the environment page and copy the API base URL. It will look like one
+    of these forms:
+
+    <HostedEnvironmentEndpointExamples />
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Start `@cms0/admin`, sign in, and open settings. You need an API key that
+    can publish schema and read/write content.
+
+    Your local API base URL usually looks like this:
+
+    ```txt filename="Self-hosted endpoint"
+    http://localhost:3000/api/content
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+### Create an API key
+
+Create an API key from the runtime settings. Give it enough permission to publish schema and read/write content while you are setting up.
+
+Store the key in your app environment:
+
+```bash filename=".env.local"
+CMS0_API_BASE_URL="https://environment-key.example.com/api"
+CMS0_API_KEY="cms0_..."
+```
+
+<Callout type="warning">
+  Keep `CMS0_API_KEY` server-side unless the key is deliberately scoped for
+  browser use.
+</Callout>
+
+### Install the package
+
+```bash filename="Terminal"
+pnpm add @cms0/cms0
+```
+
+### Add a typed content entry
+
+Create `src/cms0.ts`:
+
+```ts filename="src/cms0.ts" {11-16}
+import { cms0 } from "@cms0/cms0";
+import type { Image, Seo } from "@cms0/cms0/custom-types";
+
+type RootSchema = {
+  homePage: {
+    headline: string;
+    heroImage?: Image;
+    seo?: Seo;
+  };
+};
+
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+### Add the CLI config
+
+Create `cms0.config.ts` at your app root:
+
+```ts filename="cms0.config.ts" {5-12}
+import "dotenv/config";
+import { defineConfig } from "@cms0/cms0/config";
+
+export default defineConfig({
+  entry: "./src/cms0.ts",
+  api: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+### Publish the schema
+
+Run the local watcher while you build:
+
+```bash filename="Terminal"
+pnpm exec cms0 dev
+```
+
+For CI or a one-time publish, run:
+
+```bash filename="Terminal"
+pnpm exec cms0 build
+```
+
+### Edit content
+
+Open the admin UI for the runtime. You should see `homePage` as editable content. Fill in the headline and save.
+
+### Read content in your app
+
+```ts filename="src/page.ts"
+import { cms } from "./cms0";
+
+const homePage = await cms.homePage();
+
+console.log(homePage.headline);
+```
+
+</Steps>
+
+## Success check
+
+You are ready to keep building when all of these are true:
+
+- `pnpm exec cms0 dev` publishes without errors.
+- `homePage` appears in the cms0 admin UI.
+- Saving content in cms0 changes the value returned by `cms.homePage()`.

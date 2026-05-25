@@ -1,0 +1,21 @@
+{
+  "extends": "@cms0/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist/cjs",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@cms0/cms0/*": [
+        "./src/*"
+      ]
+    },
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": [
+    "src"
+  ],
+  "references": []
+}

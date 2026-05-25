@@ -1,0 +1,25 @@
+node_modules
+.next
+.turbo
+dist
+out
+.DS_Store
+coverage
+playwright-report
+test-results
+blob-report
+scripts/generated-env/
+.tmp-*
+*.log
+*.tsbuildinfo
+.vercel
+**/.cms0
+**/.env
+**/.env.local
+
+# Generated schema/artifacts
+apps/admin/db/generated.*
+apps/admin/db/generated/
+
+packages/cms0/src/generated/
+apps/admin/storage/

@@ -1,0 +1,75 @@
+---
+title: API keys and endpoints
+description: Connect your app and the cms0 CLI to a hosted environment.
+---
+
+import { Callout } from "nextra/components";
+import { HostedEnvironmentEndpointExamples } from "../../components/hosted-environment-endpoint-examples";
+
+Your app needs two values:
+
+```bash filename=".env.local"
+CMS0_API_BASE_URL="https://environment-key.example.com/api"
+CMS0_API_KEY="cms0_..."
+```
+
+The base URL points at one environment. The key controls what the caller can do.
+
+## Endpoint formats
+
+Hosted environments can expose one or both runtime URL formats:
+
+<HostedEnvironmentEndpointExamples />
+
+Use the endpoint shown on the environment page. Do not build the URL by hand unless you control the workspace domain settings.
+
+<Callout type="warning">
+  Treat API keys as credentials. Create separate keys for local development, CI, and production deploys.
+</Callout>
+
+## Create an API key
+
+1. Open the environment or organization settings where API keys are managed.
+2. Create a key for local development or CI.
+3. Copy the secret immediately.
+4. Store it in your app environment manager.
+
+For a first integration, give the key schema publish and content read/write access. Reduce permissions once your deployment path is stable.
+
+## Use the key from `@cms0/cms0`
+
+```ts filename="src/cms0.ts" {5-8}
+import { cms0 } from "@cms0/cms0";
+
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Use the key from the CLI
+
+```ts filename="cms0.config.ts" {5-12}
+import "dotenv/config";
+import { defineConfig } from "@cms0/cms0/config";
+
+export default defineConfig({
+  entry: "./src/cms0.ts",
+  api: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
+```
+
+## Success check
+
+Run:
+
+```bash filename="Terminal"
+pnpm exec cms0 build
+```
+
+The schema should appear in the selected hosted environment.

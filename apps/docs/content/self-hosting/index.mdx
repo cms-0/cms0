@@ -1,0 +1,122 @@
+---
+title: Overview
+description: Run @cms0/admin with your own database, storage, auth, and operations.
+---
+
+import { Callout, Cards, Steps } from "nextra/components";
+
+Self-hosting means you run `@cms0/admin` yourself.
+
+The admin app gives you the editor UI, runtime API, schema snapshots, API keys, backups, triggers, and usage views.
+
+<Cards num={2}>
+  <Cards.Card title="Deployment" href="/self-hosting/deployment" arrow />
+  <Cards.Card title="Environment variables" href="/self-hosting/environment-variables" arrow />
+  <Cards.Card title="Operations" href="/self-hosting/operations" arrow />
+</Cards>
+
+## What you run
+
+- `@cms0/admin`
+- PostgreSQL
+- filesystem or S3-compatible storage
+- email delivery for account and invitation flows
+- a reverse proxy with HTTPS
+
+## Local first run
+
+From this repository:
+
+```bash filename="Terminal"
+pnpm install
+cp apps/admin/.env.example apps/admin/.env.local
+```
+
+Edit `apps/admin/.env.local` and set at least:
+
+```bash filename="apps/admin/.env.local"
+DATABASE_URL="postgres://postgres:password@localhost:5432/cms0"
+BETTER_AUTH_SECRET="replace-with-a-long-random-secret"
+BETTER_AUTH_URL="http://localhost:3000"
+CMS0_PUBLIC_APP_URL="http://localhost:3000"
+TRUSTED_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
+ADMIN_EMAIL="you@example.com"
+ADMIN_PASSWORD="replace-with-a-local-password"
+ORG_NAME="Acme Inc."
+CMS0_STORAGE_DRIVER=filesystem
+CMS0_STORAGE_PATH=./storage
+CMS0_ASSET_BASE_URL="http://localhost:3000"
+CMS0_EMAIL_TRANSPORT=log
+```
+
+Then start the admin:
+
+```bash filename="Terminal"
+pnpm dev:admin
+```
+
+The local admin opens at `http://localhost:3000`.
+
+<Callout type="info">
+  `ADMIN_EMAIL` and `ADMIN_PASSWORD` create the first admin account during
+  startup. After that, new self-hosted operator accounts are invite-only:
+  send a team invitation from the Team settings page, then let the invitee
+  create their account from that invitation link.
+</Callout>
+
+## Setup order
+
+<Steps>
+
+### Create a Postgres database
+
+Set `DATABASE_URL` to the database used by `@cms0/admin`.
+
+### Choose storage
+
+Use filesystem storage for local or single-host deployments, or S3-compatible storage for movable containers.
+
+### Configure auth and origins
+
+Set `CMS0_PUBLIC_APP_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, and `TRUSTED_ORIGINS`.
+
+### Bootstrap the first admin
+
+Set `ADMIN_EMAIL` and `ADMIN_PASSWORD`, start the app, then sign in.
+
+### Create an API key
+
+Point your app and `cms0.config.ts` at the runtime URL ending in `/api/content`.
+
+</Steps>
+
+## Runtime URL
+
+For a local admin running on port `3000`, the runtime API base URL is:
+
+```txt filename="Local runtime URL"
+http://localhost:3000/api/content
+```
+
+In production, use your admin origin:
+
+```txt filename="Production runtime URL"
+https://cms.example.com/api/content
+```
+
+<Callout type="info">
+  Self-hosted app integrations still use `@cms0/cms0`; only the runtime base URL changes.
+</Callout>
+
+## License note
+
+The app integration workspaces use the Apache License 2.0. `apps/admin`, `@cms0/admin-server`, and `@cms0/db-schema-ops` use the GNU Affero General Public License v3.0 or later. See [License](/license) for the workspace map.
+
+## Success check
+
+Your self-hosted instance is ready when:
+
+- you can sign in as the bootstrap admin
+- `/api/content/health` responds through the deployed origin
+- you can create an API key
+- `pnpm exec cms0 build` publishes a schema into the admin UI

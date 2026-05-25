@@ -18,6 +18,14 @@ Self-hosted cms0 operations center on API keys, backups, triggers, and usage.
   A backup policy is only useful after you have restored one backup into a non-production database.
 </Callout>
 
+## Health checks
+
+Use `/api/health` for load balancers, Docker health checks, and uptime probes.
+It only verifies app plus Postgres readiness.
+
+Use `/api/content/health` with a valid API key when you need to verify the
+authenticated runtime API surface used by applications and CI.
+
 ## API keys
 
 Use API keys for apps, CI, and automation.

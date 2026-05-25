@@ -19,6 +19,66 @@ A production self-hosted deployment should be boring: one admin app, one databas
   Do not deploy with disposable filesystem storage unless uploads, snapshots, and backups are written to a durable mounted volume.
 </Callout>
 
+## Docker quickstart
+
+cms0 includes a local-first Docker Compose stack for `@cms0/admin` and Postgres.
+
+```bash filename="Terminal"
+cp deploy/docker/admin.env.example deploy/docker/admin.env
+```
+
+Edit `deploy/docker/admin.env` and set at least:
+
+```bash filename="deploy/docker/admin.env"
+CMS0_PUBLIC_APP_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=replace-with-a-long-random-secret
+TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-a-strong-password
+ORG_NAME=cms0
+CMS0_ASSET_BASE_URL=http://localhost:3000
+```
+
+Compose intentionally fails if `deploy/docker/admin.env` is missing.
+
+Then build and start the stack:
+
+```bash filename="Terminal"
+pnpm docker:admin:build
+pnpm docker:admin:up
+```
+
+Open `http://localhost:3000` and sign in with the bootstrap admin credentials.
+The bootstrap account is created only when no operator account exists.
+
+The Compose stack stores Postgres data in `cms0_postgres_data` and uploaded
+assets, snapshots, and backups in `cms0_admin_storage`.
+
+The Docker image uses the regular Next.js production runtime (`next start`).
+It does not use standalone output.
+
+Check container readiness with:
+
+```bash filename="Terminal"
+curl http://localhost:3000/api/health
+```
+
+Stop the stack with:
+
+```bash filename="Terminal"
+pnpm docker:admin:down
+```
+
+## Health checks
+
+Use `/api/health` for infrastructure health checks. It returns `200` only when
+the app can query Postgres with `select 1`, and returns `503` without leaking
+connection details when the database is unavailable.
+
+Use `/api/content/health` for authenticated runtime checks after creating an
+API key.
+
 ## Filesystem storage
 
 Filesystem storage is useful for local development or a single-host deployment with persistent volumes.
@@ -68,6 +128,7 @@ CMS0_STORAGE_FORCE_PATH_STYLE=true
 - Use HTTPS for `CMS0_PUBLIC_APP_URL` and `BETTER_AUTH_URL`.
 - Set `TRUSTED_ORIGINS` to the exact origins that can access auth flows.
 - Store secrets in your host or platform secret manager.
+- Keep `deploy/docker/admin.env` uncommitted.
 - Create a backup and restore it in a non-production database.
 - Create a scoped API key for CI.
 

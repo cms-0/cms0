@@ -16,6 +16,7 @@ scripts/generated-env/
 **/.cms0
 **/.env
 **/.env.local
+deploy/docker/admin.env
 
 # Generated schema/artifacts
 apps/admin/db/generated.*

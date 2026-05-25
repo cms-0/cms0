@@ -97,6 +97,31 @@ The default local admin origin is `http://localhost:3000`. The runtime API base 
 http://localhost:3000/api/content
 ```
 
+## Docker Quickstart
+
+The repository includes a local-first Docker Compose stack for the self-hosted admin and Postgres.
+
+```bash
+cp deploy/docker/admin.env.example deploy/docker/admin.env
+```
+
+Edit `deploy/docker/admin.env`, then run:
+
+```bash
+pnpm docker:admin:build
+pnpm docker:admin:up
+```
+
+The admin runs at `http://localhost:3000`. The stack uses named Docker volumes for Postgres data and admin storage, so uploads, snapshots, and backups survive container restarts.
+
+Check readiness with:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Read [deploy/docker/README.md](./deploy/docker/README.md) and the [self-hosting deployment docs](./apps/docs/content/self-hosting/deployment.mdx) before using Docker outside local development.
+
 ## Using cms0 From An App
 
 Install the SDK in your TypeScript app:
@@ -176,6 +201,9 @@ pnpm dev:docs
 - `pnpm test`: run unit and integration tests.
 - `pnpm build`: build packages and apps.
 - `pnpm test:e2e`: run the admin Playwright suite.
+- `pnpm docker:admin:build`: build the local Docker admin image.
+- `pnpm docker:admin:up`: start the Docker admin and Postgres stack.
+- `pnpm docker:admin:down`: stop the Docker admin and Postgres stack.
 - `pnpm changeset`: create a release changeset for publishable package changes.
 - `pnpm verify:publish`: pack and inspect publishable package tarballs.
 

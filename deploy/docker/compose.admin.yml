@@ -1,0 +1,52 @@
+name: cms0-admin
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cms0
+      POSTGRES_PASSWORD: cms0
+      POSTGRES_USER: cms0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cms0 -d cms0"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - cms0_postgres_data:/var/lib/postgresql/data
+
+  admin:
+    build:
+      context: ../..
+      dockerfile: apps/admin/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./admin.env
+    environment:
+      DATABASE_URL: postgres://cms0:cms0@postgres:5432/cms0
+      CMS0_STORAGE_DRIVER: filesystem
+      CMS0_STORAGE_PATH: /var/lib/cms0/storage
+      CMS0_BACKUPS_PATH: /var/lib/cms0/storage/backups
+      PORT: "3000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    ports:
+      - "3000:3000"
+    volumes:
+      - cms0_admin_storage:/var/lib/cms0/storage
+
+volumes:
+  cms0_admin_storage:
+  cms0_postgres_data:

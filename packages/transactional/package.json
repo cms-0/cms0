@@ -1,24 +1,7 @@
 {
   "name": "@cms0/transactional",
   "version": "0.3.0",
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/src/index.js",
-    "types": "./dist/src/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/src/index.d.ts",
-        "import": "./dist/src/index.js",
-        "require": "./dist/src/index.js",
-        "default": "./dist/src/index.js"
-      },
-      "./*": {
-        "types": "./dist/src/*.d.ts",
-        "import": "./dist/src/*.js",
-        "require": "./dist/src/*.js"
-      }
-    }
-  },
+  "private": true,
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./src/index.ts",

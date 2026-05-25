@@ -7,13 +7,14 @@ const rootDir = process.cwd();
 const changesetConfigPath = path.join(rootDir, ".changeset", "config.json");
 const changesetConfig = JSON.parse(fs.readFileSync(changesetConfigPath, "utf8"));
 const ignoredPackages = new Set(changesetConfig.ignore ?? []);
+const expectedPublishablePackages = new Set(["@cms0/cms0", "@cms0/shared"]);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
 function collectPublishablePackages() {
-  return ["packages"]
+  const workspacePackages = ["packages"]
     .flatMap((baseDir) => {
       const fullBaseDir = path.join(rootDir, baseDir);
       if (!fs.existsSync(fullBaseDir)) return [];
@@ -25,8 +26,22 @@ function collectPublishablePackages() {
     .map((dir) => ({
       dir,
       packageJson: readJson(path.join(dir, "package.json")),
-    }))
+    }));
+
+  for (const { packageJson } of workspacePackages) {
+    if (
+      packageJson.private !== true &&
+      !expectedPublishablePackages.has(packageJson.name)
+    ) {
+      throw new Error(
+        `${packageJson.name}: only @cms0/cms0 and @cms0/shared may be public npm packages`,
+      );
+    }
+  }
+
+  return workspacePackages
     .filter(({ packageJson }) => packageJson.private !== true)
+    .filter(({ packageJson }) => expectedPublishablePackages.has(packageJson.name))
     .filter(({ packageJson }) => !ignoredPackages.has(packageJson.name))
     .sort((a, b) => a.packageJson.name.localeCompare(b.packageJson.name));
 }

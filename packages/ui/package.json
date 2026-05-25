@@ -1,33 +1,7 @@
 {
   "name": "@cms0/ui",
   "version": "0.3.0",
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "./components/*": {
-        "types": "./dist/components/*.d.ts",
-        "default": "./dist/components/*.js"
-      },
-      "./hooks/*": {
-        "types": "./dist/hooks/*.d.ts",
-        "default": "./dist/hooks/*.js"
-      },
-      "./lib/*": {
-        "types": "./dist/lib/*.d.ts",
-        "default": "./dist/lib/*.js"
-      },
-      "./styles/*": {
-        "style": "./src/styles/*.css",
-        "default": "./src/styles/*.css"
-      }
-    }
-  },
+  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./src/index.ts",

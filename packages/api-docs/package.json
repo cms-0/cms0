@@ -1,17 +1,7 @@
 {
   "name": "@cms0/api-docs",
   "version": "0.3.0",
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
+  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./src/index.ts",

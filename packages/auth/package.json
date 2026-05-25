@@ -1,25 +1,7 @@
 {
   "name": "@cms0/auth",
   "version": "0.3.0",
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "./client": {
-        "types": "./dist/client.d.ts",
-        "default": "./dist/client.js"
-      },
-      "./permissions": {
-        "types": "./dist/permissions.d.ts",
-        "default": "./dist/permissions.js"
-      }
-    }
-  },
+  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./src/index.ts",

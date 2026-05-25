@@ -4,16 +4,8 @@
   "commit": false,
   "fixed": [
     [
-      "@cms0/admin-client",
-      "@cms0/admin-contract",
-      "@cms0/admin-server",
-      "@cms0/api-docs",
-      "@cms0/auth",
       "@cms0/cms0",
-      "@cms0/db-schema-ops",
-      "@cms0/shared",
-      "@cms0/transactional",
-      "@cms0/ui"
+      "@cms0/shared"
     ]
   ],
   "linked": [],
@@ -25,8 +17,17 @@
     "tag": false
   },
   "ignore": [
+    "@cms0/admin-client",
+    "@cms0/admin-contract",
+    "@cms0/admin-server",
+    "@cms0/api-docs",
+    "@cms0/auth",
+    "@cms0/db-schema-ops",
+    "@cms0/transactional",
+    "@cms0/ui",
     "@cms0/admin",
     "@cms0/docs",
+    "@cms0/example-artist-portfolio",
     "@cms0/reproduce-bug",
     "@cms0/typescript-config"
   ]

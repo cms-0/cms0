@@ -13,19 +13,18 @@ This repository is the self-hostable core product: the `@cms0/cms0` SDK and CLI,
 
 ## Branches
 
-- `main` is the production and release branch.
-- `staging` is the integration branch and the default target for contribution pull requests.
-- Contributors should create their own feature or fix branches from the latest `staging`.
+- `main` is the production, release, and default contribution base branch.
+- Contributors should create their own feature or fix branches from the latest `main`.
 
-Do not work directly on `main` or `staging` unless you are a maintainer doing repository coordination. A typical contribution flow is:
+Do not work directly on `main` unless you are a maintainer doing repository coordination. A typical contribution flow is:
 
 ```bash
-git checkout staging
-git pull origin staging
+git checkout main
+git pull origin main
 git checkout -b fix/short-description
 ```
 
-Open the pull request from your branch into `staging` unless a maintainer asks for a different target branch.
+Open the pull request from your branch into `main` unless a maintainer asks for a different target branch.
 
 ## Local Setup
 

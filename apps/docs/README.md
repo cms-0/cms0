@@ -18,6 +18,12 @@ The docs app fails early when required env values are missing.
 - Set `ENVIRONMENT=production` in production to enable Umami analytics.
 - Set `CMS0_DOCS_PUBLIC_URL` when the docs site is served from a stable public
   origin.
+- Set `CMS0_DOCS_BASE_PATH=/docs` when the docs app is mounted under
+  `https://cms0.io/docs`.
+- For production SEO on cms0.io, use
+  `CMS0_DOCS_PUBLIC_URL=https://cms0.io/docs` and
+  `CMS0_DOCS_BASE_PATH=/docs` so canonical URLs, static links, sitemap entries,
+  and Open Graph URLs all point at the same public location.
 - Set `CMS0_PUBLIC_APP_URL`, `CMS0_BASE_DOMAIN`,
   `CMS0_PUBLIC_ENV_PATH_RUNTIME_ENABLED`, and
   `CMS0_PUBLIC_ENV_SUBDOMAIN_RUNTIME_ENABLED` so hosted endpoint examples match

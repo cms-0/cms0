@@ -61,3 +61,17 @@ export function getDocsPublicUrl() {
   const port = readOptionalEnv("PORT") ?? "3008";
   return `http://localhost:${port}`;
 }
+
+export function getDocsBasePath() {
+  const value = readOptionalEnv("CMS0_DOCS_BASE_PATH");
+  if (!value || value === "/") {
+    return "";
+  }
+
+  const normalized = `/${value.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+  if (normalized.includes("//")) {
+    throw new Error("CMS0_DOCS_BASE_PATH must be a valid path prefix.");
+  }
+
+  return normalized;
+}

@@ -224,7 +224,7 @@ cms0 is early, opinionated, and still being shaped. Contributions are welcome wh
 
 Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
 
-Contributors should create their own feature or fix branch from `staging`, then open a pull request back into `staging`. `main` is reserved for production releases.
+Contributors should create their own feature or fix branch from the latest `main`, then open a pull request back into `main`. Do not work directly on `main` unless you are a maintainer doing repository coordination.
 
 If you use an AI coding assistant, also read [.agents/AI_CONTRIBUTING.md](./.agents/AI_CONTRIBUTING.md). Human-facing project rules stay in this README and `CONTRIBUTING.md`; assistant-specific workflow rules live under `.agents`.
 

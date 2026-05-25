@@ -5,16 +5,19 @@ import { getPageMap } from "nextra/page-map";
 import { Footer, Layout, Navbar } from "nextra-theme-docs";
 import { Logo } from "../components/logo";
 import {
+  getDocsBasePath,
   getDocsPublicUrl,
   getDocsRepositoryBase,
   getProjectRepositoryLink,
   isProductionEnvironment,
 } from "../lib/env";
+import { createDocsMetadata, DOCS_DESCRIPTION } from "../lib/seo";
 import "nextra-theme-docs/style.css";
 
 const docsRepositoryBase = getDocsRepositoryBase();
 
 const projectLink = getProjectRepositoryLink();
+const docsBasePath = getDocsBasePath();
 
 const logo = (
   <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -25,7 +28,7 @@ const logo = (
 
 const navbar = (
   <Navbar logo={logo} projectLink={projectLink || undefined} align="left">
-    <a href="/getting-started">Start here</a>
+    <a href={`${docsBasePath}/getting-started`}>Start here</a>
   </Navbar>
 );
 
@@ -43,13 +46,19 @@ const banner = (
 );
 
 export const metadata: Metadata = {
+  ...createDocsMetadata(undefined, {
+    title: {
+      default: "cms0 Documentation",
+      template: "%s | cms0 Documentation",
+    },
+    description: DOCS_DESCRIPTION,
+  }),
   metadataBase: new URL(getDocsPublicUrl()),
   title: {
     default: "cms0 Documentation",
     template: "%s | cms0 Documentation",
   },
-  description:
-    "Guides for hosted cms0 workspaces, self-hosted @cms0/admin, and @cms0/cms0 app integration.",
+  description: DOCS_DESCRIPTION,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

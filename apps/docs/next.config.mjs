@@ -1,5 +1,14 @@
 import nextra from "nextra";
 
+function getBasePath() {
+  const value = process.env.CMS0_DOCS_BASE_PATH?.trim();
+  if (!value || value === "/") {
+    return undefined;
+  }
+
+  return `/${value.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+}
+
 const withNextra = nextra({
   search: {
     codeblocks: false,
@@ -7,6 +16,7 @@ const withNextra = nextra({
 });
 
 export default withNextra({
+  basePath: getBasePath(),
   reactStrictMode: true,
   output: "export",
   trailingSlash: true,

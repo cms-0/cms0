@@ -3,6 +3,7 @@
   "globalPassThroughEnv": [
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
+    "ENVIRONMENT",
     "CMS0_PUBLIC_APP_URL",
     "TRUSTED_ORIGINS",
     "DATABASE_URL",

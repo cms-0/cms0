@@ -1,45 +1,339 @@
 ---
 title: Accessors
-description: Read and write content through the typed cms0 client.
+description: Complete reference for reading, querying, and mutating content through the typed cms0 client.
 ---
 
 import { Callout } from "nextra/components";
 
 The shape you pass to `cms0<T>()` becomes the shape of the client. The CLI
-also writes local descriptor types under `.cms0/generated`, so `data.models.*`
-is inferred from the same schema descriptor used by the runtime.
+writes local descriptor types under `.cms0/generated`, so every accessor is
+fully inferred from your schema.
 
-```ts filename="src/example.ts"
-const homePage = await cms.homePage();
-const articles = await cms.articles();
+```ts filename="src/cms0.ts"
+import { cms0 } from "@cms0/cms0";
+
+type RootSchema = {
+  homePage: {
+    headline: string;
+    seo: { title: string; description: string };
+  };
+  articles: Array<{ title: string; slug: string }>;
+};
+
+export const cms = cms0<RootSchema>({
+  apiConfig: {
+    baseUrl: process.env.CMS0_API_BASE_URL,
+    key: process.env.CMS0_API_KEY,
+  },
+});
 ```
 
 <Callout type="info">
-  Accessors are generated from the TypeScript shape that the CLI publishes. If an accessor is missing, republish the schema.
+  Accessors are generated from the TypeScript shape that the CLI publishes. If an accessor is missing, run `cms0 dev` or `cms0 build` again.
 </Callout>
 
-## Root content
+## Reading root content
 
-Root content is a singleton.
+Root content is a singleton. Call the accessor as a function to read it.
 
 ```ts filename="src/example.ts"
 const homePage = await cms.homePage();
+//    ^? { headline: string; seo: { title: string; description: string } }
+```
 
+## Reading collections
+
+Root array fields return all items when called as a function.
+
+```ts filename="src/example.ts"
+const articles = await cms.articles();
+//    ^? Array<{ title: string; slug: string }>
+```
+
+## Reading models
+
+Reusable model declarations are available under `cms.models`.
+
+```ts filename="src/example.ts"
+const posts = await cms.models.Post();
+//    ^? Post[]
+
+const post = await cms.models.Post.byId("post_id");
+//    ^? Post | null
+```
+
+`list()` and `get()` are aliases for the callable accessor and `byId()`:
+
+```ts filename="src/example.ts"
+const posts = await cms.models.Post.list();
+const post = await cms.models.Post.get("post_id");
+```
+
+## Querying with `.where()`
+
+Use `.where()` to filter models and root arrays by field values. The clause is
+fully type-inferred: keys are constrained to actual fields, and operator values
+are constrained to the field's type.
+
+### Exact match
+
+```ts filename="src/example.ts"
+const drafts = await cms.models.Post.where({ status: "draft" });
+const featured = await cms.articles.where({ slug: "featured" });
+```
+
+### String operators
+
+```ts filename="src/example.ts"
+await cms.models.Post.where({ title: { contains: "launch" } });
+await cms.models.Post.where({ title: { startsWith: "How to" } });
+await cms.models.Post.where({ title: { endsWith: "guide" } });
+await cms.models.Post.where({ title: { in: ["Post A", "Post B"] } });
+await cms.models.Post.where({ title: { notIn: ["Draft"] } });
+await cms.models.Post.where({ title: { isNull: true } });
+```
+
+### Number operators
+
+```ts filename="src/example.ts"
+await cms.models.Post.where({ views: { gt: 100 } });
+await cms.models.Post.where({ views: { gte: 50 } });
+await cms.models.Post.where({ views: { lt: 1000 } });
+await cms.models.Post.where({ views: { lte: 500 } });
+await cms.models.Post.where({ views: { between: [10, 100] } });
+await cms.models.Post.where({ views: { in: [0, 100, 1000] } });
+```
+
+### Boolean operators
+
+```ts filename="src/example.ts"
+await cms.models.Post.where({ published: true });
+await cms.models.Post.where({ published: { eq: false } });
+await cms.models.Post.where({ published: { isNull: true } });
+```
+
+### Dot-path fields
+
+Filter on nested object fields using dot notation:
+
+```ts filename="src/example.ts"
+await cms.models.Post.where({ "seo.title": { contains: "guide" } });
+await cms.homePage.where({ "author.name": { startsWith: "J" } });
+```
+
+### Combining conditions
+
+Use `AND`, `OR`, and `NOT` to build complex queries:
+
+```ts filename="src/example.ts"
+await cms.models.Post.where({
+  AND: [
+    { status: "published" },
+    { views: { gt: 100 } },
+  ],
+});
+
+await cms.models.Post.where({
+  OR: [
+    { status: "draft" },
+    { status: "review" },
+  ],
+});
+
+await cms.models.Post.where({
+  NOT: { status: "archived" },
+});
+```
+
+### Where with options
+
+`.where()` accepts the same options as the callable accessor:
+
+```ts filename="src/example.ts"
+const results = await cms.models.Post.where(
+  { status: "published" },
+  {
+    fields: ["title", "slug"],
+    graph: { pageSize: 10, orderBy: "views", orderDir: "desc" },
+    response: "envelope",
+  },
+);
+// results: { items: Post[], total: number }
+```
+
+### `.whereFirst()`
+
+When you expect a single result, use `.whereFirst()` instead of `.where()`. It
+returns the first matching item or `null` — no need to index into an array.
+
+```ts filename="src/example.ts"
+const post = await cms.models.Post.whereFirst({ slug: "launch-notes" });
+//    ^? Post | null
+
+if (post) {
+  console.log(post.title);
+}
+```
+
+Works on root arrays too:
+
+```ts filename="src/example.ts"
+const article = await cms.articles.whereFirst({ slug: "featured" });
+```
+
+## Nested field access
+
+Chain into nested objects and arrays to read specific fields:
+
+```ts filename="src/example.ts"
+const headline = await cms.homePage.headline();
+//    ^? string
+
+const seoTitle = await cms.homePage.seo.title();
+//    ^? string
+```
+
+## Field projection
+
+Control which fields are returned using `fields` (include) and `exclude`:
+
+```ts filename="src/example.ts"
+const partial = await cms.homePage({
+  fields: ["headline", "seo.title"],
+});
+//    ^? { headline: string; seo: { title: string } }
+
+const withoutSeo = await cms.homePage({
+  exclude: ["seo"],
+});
+```
+
+## Pagination and ordering
+
+Use `graph` options to control pagination and sorting for array fields:
+
+```ts filename="src/example.ts"
+const page = await cms.homePage({
+  graph: {
+    page: 2,
+    pageSize: 10,
+    orderBy: "title",
+    orderDir: "desc",
+  },
+});
+```
+
+Use `pageSize: "full"` to fetch all items without pagination:
+
+```ts filename="src/example.ts"
+const all = await cms.articles({
+  graph: { pageSize: "full" },
+});
+```
+
+### Per-path overrides
+
+Override pagination for specific nested arrays using `graph.paths`:
+
+```ts filename="src/example.ts"
+await cms.homePage({
+  graph: {
+    pageSize: "full",
+    paths: {
+      "seo.openGraph.images": { pageSize: 50 },
+    },
+  },
+});
+```
+
+## Search
+
+Use `graph.search` for full-text search across all text fields:
+
+```ts filename="src/example.ts"
+const results = await cms.articles({
+  graph: { search: "launch" },
+});
+```
+
+## Localization
+
+Read content for a specific locale:
+
+```ts filename="src/example.ts"
+const french = await cms.homePage({ locale: "fr" });
+```
+
+## Response modes
+
+### Envelope response
+
+Use `response: "envelope"` to get pagination metadata:
+
+```ts filename="src/example.ts"
+const envelope = await cms.articles({
+  response: "envelope",
+});
+//    ^? { items: Article[], total: number }
+```
+
+### Include IDs
+
+Use `includeId: true` to include cms0 internal object IDs:
+
+```ts filename="src/example.ts"
+const withIds = await cms.homePage({ includeId: true });
+```
+
+### Raw response
+
+Use `response: "raw"` to skip normalization:
+
+```ts filename="src/example.ts"
+const raw = await cms.homePage({ response: "raw" });
+```
+
+## Mutating roots
+
+Update a root singleton with a partial value:
+
+```ts filename="src/example.ts"
 await cms.homePage.update({
   headline: "A better headline",
 });
 ```
 
-## Collections
+## Mutating fields
 
-Root array fields expose array helpers for editing the root collection.
+Replace, update, or delete individual fields:
 
 ```ts filename="src/example.ts"
-const articles = await cms.articles();
+await cms.homePage.headline.set("New headline");
+await cms.homePage.headline.update("Updated headline");
+await cms.homePage.headline.delete();
+```
 
+For nested objects, `.update()` patches the object:
+
+```ts filename="src/example.ts"
+await cms.homePage.seo.update({
+  title: "New SEO title",
+});
+```
+
+## Mutating arrays
+
+Append, insert, or update items in root arrays:
+
+```ts filename="src/example.ts"
 await cms.articles.append({
   title: "Launch notes",
   slug: "launch-notes",
+});
+
+await cms.articles.insert(0, {
+  title: "Pinned post",
+  slug: "pinned",
 });
 
 await cms.articles.at(0).update({
@@ -47,64 +341,59 @@ await cms.articles.at(0).update({
 });
 ```
 
-## Models
+## Mutating models
 
-Reusable model declarations are available under `cms.models`.
+Create, update, and delete model instances:
 
 ```ts filename="src/example.ts"
-const articles = await cms.models.Article({
-  includeId: false,
-  query: {
-    pageSize: 100,
-    orderBy: "publishedAt",
-    orderDir: "desc",
-  },
-});
-
-const article = await cms.models.Article.byId("article_id");
-
-await cms.models.Article.create({
+const newPost = await cms.models.Post.create({
   title: "Launch notes",
   slug: "launch-notes",
 });
 
-await cms.models.Article.update("article_id", {
+await cms.models.Post.update("post_id", {
   title: "Updated title",
 });
 
-await cms.models.Article.delete("article_id");
+await cms.models.Post.delete("post_id");
 ```
 
-## Options
+## Abort and signals
 
-Accessors accept read options:
+Pass an `AbortSignal` to cancel in-flight requests:
 
 ```ts filename="src/example.ts"
+const controller = new AbortController();
+
 const homePage = await cms.homePage({
-  fields: ["headline", "seo.title"],
-  exclude: ["seo.jsonLd"],
-  graph: {
-    pageSize: "full",
-    paths: {
-      "seo.openGraph.images": { pageSize: 50 },
-    },
-  },
-  includeId: true,
-  locale: "en",
+  signal: controller.signal,
 });
+
+controller.abort();
 ```
 
-Use:
+## Client metadata
 
-- `fields` to include specific nested paths
-- `exclude` to remove specific nested paths
-- `graph.page`, `graph.pageSize`, `graph.orderBy`, `graph.orderDir`, and `graph.search` to control resolved graph arrays recursively
-- `graph.paths` to override graph controls for a nested dot path such as `seo.openGraph.images`
-- `includeId` to include cms0 object IDs
-- `locale` when reading localized content
-- `response: "envelope"` when you need response metadata
+Access SDK metadata through `cms.meta`:
 
-`fields` and `exclude` control the returned shape. Graph pagination and sorting live under `graph` so a read like `cms.homePage({ fields: "seo", graph: { pageSize: "full" } })` applies the full page size to nested graph-backed arrays inside `seo`. Resolved root reads default to `graph.pageSize: "full"`.
+```ts filename="src/example.ts"
+const { locales, defaultLocale, includeIdDefault } = cms.meta;
+```
+
+## Error handling
+
+Accessor calls throw on network errors, 404s, and permission failures:
+
+```ts filename="src/example.ts"
+try {
+  const post = await cms.models.Post.byId("missing_id");
+  if (!post) {
+    console.log("Post not found");
+  }
+} catch (error) {
+  console.error("Request failed:", error);
+}
+```
 
 ## Success check
 

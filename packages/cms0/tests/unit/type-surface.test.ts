@@ -142,6 +142,21 @@ if (false) {
     title: "Typed generated model",
   });
 
+  generatedData.models.GeneratedPost.where({ title: { contains: "hello" } });
+  generatedData.models.GeneratedPost.where({ title: "exact" });
+  generatedData.models.GeneratedPost.where({
+    AND: [{ title: { startsWith: "a" } }, { title: { endsWith: "z" } }],
+  });
+
+  generatedData.models.GeneratedPost.whereFirst({ title: "exact" }).then(
+    (post) => {
+      post?.title.toUpperCase();
+    },
+  );
+  generatedData.models.GeneratedPost.whereFirst({
+    title: { contains: "hello" },
+  });
+
   // @ts-expect-error generated models only expose descriptor model keys
   generatedData.models.MissingModel;
 
@@ -179,6 +194,24 @@ if (false) {
 
   // @ts-expect-error graph path overrides only accept known array field paths
   data.HomePage({ graph: { paths: { author: { pageSize: 5 } } } });
+
+  data.HomePage.testimonials.where({ quote: { contains: "great" } });
+  data.HomePage.testimonials.where({ quote: "exact match" });
+  data.HomePage.testimonials.where({
+    AND: [{ quote: { contains: "a" } }, { quote: { contains: "b" } }],
+  });
+  data.HomePage.testimonials.where({
+    OR: [{ quote: "x" }, { quote: "y" }],
+  });
+  data.HomePage.testimonials.where({
+    NOT: { quote: { startsWith: "bad" } },
+  });
+
+  data.HomePage.testimonials.whereFirst({ quote: "exact match" }).then(
+    (item) => {
+      item?.quote.toUpperCase();
+    },
+  );
 }
 
 test("cms0 type-surface compile assertions are included", () => {

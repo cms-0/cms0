@@ -100,6 +100,7 @@ export default async function Layout({
           rootsOrderHint={rootsOrderHint}
           roots={roots}
           userEmail={session.user.email}
+          userImage={session.user.image}
           userName={session.user.name}
         />
       }

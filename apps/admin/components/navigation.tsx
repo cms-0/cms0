@@ -68,6 +68,7 @@ type NavigationProps = {
   rootsOrderHint?: string[] | null;
   roots: SchemaCollectionEntry[];
   userEmail?: string | null;
+  userImage?: string | null;
   userName?: string | null;
 };
 
@@ -176,8 +177,13 @@ function ContentTreeNode({
 
 function ProfileMenu({
   userEmail,
+  userImage,
   userName,
-}: Readonly<{ userEmail?: string | null; userName: string }>) {
+}: Readonly<{
+  userEmail?: string | null;
+  userImage?: string | null;
+  userName: string;
+}>) {
   const router = useRouter();
   const { isMobile } = useSidebar();
   const [isPending, startTransition] = React.useTransition();
@@ -192,7 +198,7 @@ function ProfileMenu({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="size-8 rounded-lg">
-                <AvatarImage alt={userName} src="" />
+                <AvatarImage alt={userName} src={userImage ?? undefined} />
                 <AvatarFallback className="rounded-lg">
                   {userName.slice(0, 1).toUpperCase()}
                 </AvatarFallback>
@@ -213,7 +219,7 @@ function ProfileMenu({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="size-8 rounded-lg">
-                  <AvatarImage alt={userName} src="" />
+                  <AvatarImage alt={userName} src={userImage ?? undefined} />
                   <AvatarFallback className="rounded-lg">
                     {userName.slice(0, 1).toUpperCase()}
                   </AvatarFallback>
@@ -254,6 +260,7 @@ export function Navigation({
   rootsOrderHint,
   roots,
   userEmail,
+  userImage,
   userName,
 }: Readonly<NavigationProps>) {
   const pathname = usePathname() ?? "/";
@@ -449,7 +456,11 @@ export function Navigation({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <ProfileMenu userEmail={userEmail} userName={displayName} />
+        <ProfileMenu
+          userEmail={userEmail}
+          userImage={userImage}
+          userName={displayName}
+        />
       </SidebarFooter>
     </Sidebar>
   );

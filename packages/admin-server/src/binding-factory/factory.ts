@@ -367,6 +367,7 @@ export function createAdminServerBinding(
               search: options?.search,
               paths: options?.paths,
               resolveModelRefs: options?.resolveModelRefs,
+              filter: options?.filter,
             }),
           );
         }
@@ -380,6 +381,7 @@ export function createAdminServerBinding(
               locale: options?.locale ?? "all",
               page,
               pageSize,
+              filter: options?.filter,
             });
             const pageItems = Array.isArray(result.items) ? result.items : [];
             if (!pageItems.length) break;
@@ -404,6 +406,7 @@ export function createAdminServerBinding(
           locale: options?.locale ?? "all",
           page: (options?.page ?? 1) - 1,
           pageSize,
+          filter: options?.filter,
         });
         return enrichAssetUrls({
           data: result.items,

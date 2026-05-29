@@ -41,6 +41,7 @@ import {
   capitalize,
 } from "./helpers";
 import { buildSingletonHandlers } from "./singleton-handlers";
+import { buildFilterWhere } from "./filter-builder";
 
 type Db = {
   select: (...args: any[]) => any;
@@ -1475,6 +1476,7 @@ export function buildCollectionHandlers(
         expandArrays?: string[];
         expandObjects?: string[];
         locale?: string;
+        filter?: import("@cms0/shared").GraphFilterClause;
       },
     ) => {
       const resolvedParentId = await ensureParentId(
@@ -1506,6 +1508,10 @@ export function buildCollectionHandlers(
         ? buildSearchFilter(opts.search, table.table)
         : undefined;
       if (searchFilter) filters.push(searchFilter);
+      const filterWhere = opts?.filter
+        ? buildFilterWhere(opts.filter, table.table)
+        : undefined;
+      if (filterWhere) filters.push(filterWhere);
 
       const where = filters.length ? and(...filters) : undefined;
 

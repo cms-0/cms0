@@ -28,6 +28,8 @@ import {
   type GraphOrderDirection,
   type GraphPathQueryOptions,
   type GraphQueryOptions,
+  type GraphFilterClause,
+  type WhereClause,
 } from "@cms0/shared";
 import { getCustomInlineTypeMetadata } from "./custom-types/registry.js";
 import type {
@@ -373,6 +375,14 @@ export type CmsModelAccessor<T, IncludeIdDefault extends boolean = false> = {
   create(value: T): Promise<T>;
   update(id: string, value: DeepPartial<T>): Promise<T>;
   delete(id: string): Promise<void>;
+  where(
+    clause: WhereClause<T>,
+    options?: CmsAccessorOptions,
+  ): Promise<T[]>;
+  whereFirst(
+    clause: WhereClause<T>,
+    options?: CmsAccessorOptions,
+  ): Promise<T | null>;
 };
 
 export type CmsMeta<IncludeIdDefault extends boolean = false> = {
@@ -434,6 +444,14 @@ type CmsFieldChildren<T, IncludeIdDefault extends boolean> =
         append(value: Item): Promise<void>;
         at(index: number): CmsFieldAccessor<Item, IncludeIdDefault>;
         insert(index: number, value: Item): Promise<void>;
+        where(
+          clause: WhereClause<Item>,
+          options?: CmsAccessorOptions,
+        ): Promise<Item[]>;
+        whereFirst(
+          clause: WhereClause<Item>,
+          options?: CmsAccessorOptions,
+        ): Promise<Item | null>;
       }
     : NonNullable<T> extends object
       ? IsMapLikeObject<NonNullable<T>> extends true
@@ -3055,6 +3073,87 @@ function createConcreteGraphAccessor(
               : fieldDescriptor,
           );
       }
+      if (property === "where") {
+        return async (clause: WhereClause<any>, options?: CmsAccessorOptions) => {
+          const graphPath = path.length
+            ? `${input.entry.path}/${path.join("/")}`
+            : input.entry.path;
+          const body: Record<string, unknown> = {
+            filter: clause as GraphFilterClause,
+          };
+          if (options?.fields) body.fields = options.fields;
+          if (options?.exclude) body.exclude = options.exclude;
+          if (options?.locale) body.locale = options.locale;
+          if (options?.graph?.page !== undefined) body.page = options.graph.page;
+          if (options?.graph?.pageSize !== undefined) body.pageSize = options.graph.pageSize;
+          if (options?.graph?.orderBy) body.orderBy = options.graph.orderBy;
+          if (options?.graph?.orderDir) body.orderDir = options.graph.orderDir;
+          if (options?.graph?.search) body.search = options.graph.search;
+          if (options?.graph?.paths) body.paths = options.graph.paths;
+
+          const response = await request(
+            input.baseUrl,
+            input.apiKey,
+            "POST",
+            `_graph/${graphPath}/_query`,
+            body,
+            { signal: options?.signal },
+          );
+
+          if (options?.response === "envelope") {
+            return response;
+          }
+
+          if (response && typeof response === "object" && "data" in response) {
+            return response.data;
+          }
+          if (response && typeof response === "object" && "items" in response) {
+            return response.items;
+          }
+          if (Array.isArray(response)) {
+            return response;
+          }
+          return response;
+        };
+      }
+      if (property === "whereFirst") {
+        return async (clause: WhereClause<any>, options?: CmsAccessorOptions) => {
+          const graphPath = path.length
+            ? `${input.entry.path}/${path.join("/")}`
+            : input.entry.path;
+          const body: Record<string, unknown> = {
+            filter: clause as GraphFilterClause,
+            pageSize: 1,
+          };
+          if (options?.fields) body.fields = options.fields;
+          if (options?.exclude) body.exclude = options.exclude;
+          if (options?.locale) body.locale = options.locale;
+          if (options?.graph?.page !== undefined) body.page = options.graph.page;
+          if (options?.graph?.orderBy) body.orderBy = options.graph.orderBy;
+          if (options?.graph?.orderDir) body.orderDir = options.graph.orderDir;
+          if (options?.graph?.search) body.search = options.graph.search;
+          if (options?.graph?.paths) body.paths = options.graph.paths;
+
+          const response = await request(
+            input.baseUrl,
+            input.apiKey,
+            "POST",
+            `_graph/${graphPath}/_query`,
+            body,
+            { signal: options?.signal },
+          );
+
+          const items =
+            response && typeof response === "object" && "data" in response
+              ? (response as any).data
+              : response && typeof response === "object" && "items" in response
+                ? (response as any).items
+                : Array.isArray(response)
+                  ? response
+                  : [];
+          return items[0] ?? null;
+        };
+      }
 
       const childDescriptor = getDescriptorChild(
         input.descriptor,
@@ -3182,6 +3281,60 @@ export function createCmsClient<
         "DELETE",
         `${entry.path}?id=${encodeURIComponent(id)}`,
       );
+    };
+
+    accessor.where = async (
+      clause: WhereClause<any>,
+      options?: CmsAccessorOptions,
+    ) => {
+      const body: Record<string, unknown> = {
+        filter: clause as GraphFilterClause,
+      };
+      if (options?.fields) body.fields = options.fields;
+      if (options?.exclude) body.exclude = options.exclude;
+      if (options?.locale) body.locale = options.locale;
+      if (options?.graph?.page !== undefined) body.page = options.graph.page;
+      if (options?.graph?.pageSize !== undefined) body.pageSize = options.graph.pageSize;
+      if (options?.graph?.orderBy) body.orderBy = options.graph.orderBy;
+      if (options?.graph?.orderDir) body.orderDir = options.graph.orderDir;
+      if (options?.graph?.search) body.search = options.graph.search;
+      if (options?.graph?.paths) body.paths = options.graph.paths;
+
+      const response = await request(
+        baseUrl,
+        apiKey,
+        "POST",
+        `_graph/${entry.path}/_query`,
+        body,
+        { signal: options?.signal },
+      );
+
+      if (options?.response === "envelope") {
+        return response;
+      }
+
+      if (response && typeof response === "object" && "data" in response) {
+        return response.data;
+      }
+      if (response && typeof response === "object" && "items" in response) {
+        return response.items;
+      }
+      if (Array.isArray(response)) {
+        return response;
+      }
+      return response;
+    };
+
+    accessor.whereFirst = async (
+      clause: WhereClause<any>,
+      options?: CmsAccessorOptions,
+    ) => {
+      const results = await accessor.where(clause, {
+        ...options,
+        graph: { ...options?.graph, pageSize: 1 },
+      });
+      const items = Array.isArray(results) ? results : [];
+      return items[0] ?? null;
     };
 
     return accessor;
@@ -3562,3 +3715,11 @@ export {
   toTwitter,
 } from "./seo.js";
 export type { ResolveLocalizedOptions, ToNextMetadataOptions } from "./seo.js";
+export type {
+  WhereClause,
+  StringFilterOp,
+  NumberFilterOp,
+  BooleanFilterOp,
+  FilterOp,
+  GraphFilterClause,
+} from "@cms0/shared";

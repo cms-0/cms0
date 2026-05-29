@@ -32,10 +32,12 @@ export type QueryOptions = ParsedGraphPathQueryOptions & {
   expandObjects?: string[];
   locale?: string;
   raw?: boolean;
+  filter?: import("@cms0/shared").GraphFilterClause;
 };
 
 type CollectionListOptions = Omit<QueryOptions, "pageSize"> & {
   pageSize?: number;
+  filter?: import("@cms0/shared").GraphFilterClause;
 };
 
 type CollectionReadHandler = {
@@ -69,6 +71,7 @@ type ResolvedReadState = {
   paths: Record<string, QueryOptions>;
   projectionFields?: string[];
   projectionExclude?: string[];
+  filter?: import("@cms0/shared").GraphFilterClause;
   modelCache: Map<string, Promise<any>>;
   activeModelKeys: Set<string>;
 };
@@ -246,6 +249,7 @@ function createState(options?: ResolvedReadOptions): ResolvedReadState {
     paths: normalizeGraphPathMap(options?.paths),
     projectionFields: options?.fields,
     projectionExclude: options?.exclude,
+    filter: options?.filter,
     modelCache: new Map(),
     activeModelKeys: new Set(),
   };
@@ -613,6 +617,7 @@ export function buildResolvedReadEngine(deps: ResolvedReadEngineDeps) {
           orderDir: options.orderDir,
           search: options.search,
           locale: options.locale,
+          filter: options.filter,
         });
         const items = Array.isArray(result?.items) ? result.items : [];
         if (!items.length) break;
@@ -636,6 +641,7 @@ export function buildResolvedReadEngine(deps: ResolvedReadEngineDeps) {
       orderDir: options.orderDir,
       search: options.search,
       locale: options.locale,
+      filter: options.filter,
     });
 
     const items = Array.isArray(result?.items) ? result.items : [];
@@ -1208,6 +1214,7 @@ export function buildResolvedReadEngine(deps: ResolvedReadEngineDeps) {
           {
             ...state.pagination,
             locale: state.pagination.locale ?? state.locale ?? "all",
+            filter: state.filter,
           },
           state,
         );

@@ -6,6 +6,7 @@ import type { AdminRequestInput, AdminResponse } from "@cms0/admin-contract";
 import {
   parseGraphQueryOptions,
   type ParsedGraphPathQueryOptions,
+  type GraphFilterClause,
 } from "@cms0/shared";
 import type { AdminServerTarget } from "../types";
 import {
@@ -108,6 +109,11 @@ export async function handleGraphRequest(
       exclude,
     };
 
+    const filter =
+      body.filter && typeof body.filter === "object" && !Array.isArray(body.filter)
+        ? (body.filter as GraphFilterClause)
+        : undefined;
+
     const result = await binding.readGraphValue({
       path: graphPath,
       target,
@@ -123,6 +129,7 @@ export async function handleGraphRequest(
         fields: pagination.fields,
         exclude: pagination.exclude,
         paths,
+        filter,
       },
     });
 

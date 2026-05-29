@@ -3,6 +3,64 @@ export type GraphOrderDirection = "asc" | "desc";
 export type GraphFieldSelector = string | string[];
 export type GraphPageSize = number | "full";
 
+export type StringFilterOp =
+  | string
+  | { eq: string }
+  | { ne: string }
+  | { contains: string }
+  | { startsWith: string }
+  | { endsWith: string }
+  | { in: string[] }
+  | { notIn: string[] }
+  | { isNull: boolean };
+
+export type NumberFilterOp =
+  | number
+  | { eq: number }
+  | { ne: number }
+  | { gt: number }
+  | { gte: number }
+  | { lt: number }
+  | { lte: number }
+  | { between: [number, number] }
+  | { in: number[] }
+  | { notIn: number[] }
+  | { isNull: boolean };
+
+export type BooleanFilterOp = boolean | { eq: boolean } | { isNull: boolean };
+
+export type FilterOp<T> = T extends string
+  ? StringFilterOp
+  : T extends number
+    ? NumberFilterOp
+    : T extends boolean
+      ? BooleanFilterOp
+      : T | { eq: T } | { ne: T } | { isNull: boolean };
+
+type DotPathKeys<T> = T extends object
+  ? {
+      [K in keyof T & string]: T[K] extends object
+        ? K | `${K}.${DotPathKeys<T[K]>}`
+        : K;
+    }[keyof T & string]
+  : never;
+
+export type WhereClause<T> = {
+  [K in keyof T]?: FilterOp<T[K]>;
+} & {
+  [P in DotPathKeys<T> as P extends `${string}.${string}` ? P : never]?: FilterOp<unknown>;
+} & {
+  AND?: WhereClause<T>[];
+  OR?: WhereClause<T>[];
+  NOT?: WhereClause<T>;
+};
+
+export type GraphFilterClause = Record<string, unknown> & {
+  AND?: GraphFilterClause[];
+  OR?: GraphFilterClause[];
+  NOT?: GraphFilterClause;
+};
+
 export type GraphPathQueryOptions = {
   page?: number;
   pageSize?: GraphPageSize;
@@ -25,6 +83,7 @@ export type GraphQueryOptions = Omit<
   maxDepth?: number;
   resolveModelRefs?: boolean;
   paths?: GraphPathQueryMap;
+  filter?: GraphFilterClause;
 };
 
 export type ParsedGraphPathQueryOptions = Omit<
@@ -42,6 +101,7 @@ export type ParsedGraphQueryOptions = Omit<
   fields?: string[];
   exclude?: string[];
   paths?: Record<string, ParsedGraphPathQueryOptions>;
+  filter?: GraphFilterClause;
 };
 
 const parseListQueryParam = (value: string | null): string[] | undefined => {

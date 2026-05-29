@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 import { CmsImage } from "@/components/cms-image";
 import { Eyebrow, RichText } from "@/components/content-blocks";
-import { data, readCms } from "@/data/cms0";
+import { data, readCms, type BlogPost } from "@/data/cms0";
 import { blogPostsFallback } from "@/data/fallbacks";
 import { formatDate } from "@/lib/format";
 import { pageMetadata } from "@/lib/metadata";
@@ -16,7 +16,7 @@ type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-function readBlogPosts() {
+function readAllBlogPosts() {
   return readCms(
     () =>
       data.models.BlogPost({
@@ -37,8 +37,30 @@ function readBlogPosts() {
   );
 }
 
+function readBlogPostBySlug(slug: string) {
+  return readCms(
+    async () => {
+      const post = await data.models.BlogPost.whereFirst(
+        { slug },
+        {
+          includeId: false,
+          graph: {
+            pageSize: "full",
+            paths: {
+              "seo.openGraph.images": { pageSize: "full" },
+            },
+          },
+        },
+      );
+      if (!post) throw new Error("not found");
+      return post;
+    },
+    null as BlogPost | null,
+  );
+}
+
 export async function generateStaticParams() {
-  const posts = await readBlogPosts();
+  const posts = await readAllBlogPosts();
   return posts.map((post) => ({ slug: post.slug }));
 }
 
@@ -46,8 +68,7 @@ export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const posts = await readBlogPosts();
-  const post = posts.find((candidate) => candidate.slug === slug);
+  const post = await readBlogPostBySlug(slug);
 
   if (!post) {
     return pageMetadata(undefined, {
@@ -64,8 +85,7 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const posts = await readBlogPosts();
-  const post = posts.find((candidate) => candidate.slug === slug);
+  const post = await readBlogPostBySlug(slug);
 
   if (!post) {
     notFound();

@@ -43,6 +43,11 @@ Core is the source of generic package roots. When core changes shared packages, 
 ## Contribution Workflow
 
 - Refer to `CONTRIBUTING.md` for the complete contribution guidelines.
+- **Before implementing any code, always determine the target branch:**
+  1. Run `git status -sb` to check the current branch.
+  2. Ask the user or confirm which branch the work should go on.
+  3. If the work should not be on `main` or `staging`, create or switch to a dedicated feature/fix branch first.
+  4. Do not start editing files until the correct branch is confirmed.
 - **Never initiate the development workflow** (creating branches, making changes, staging, committing, pushing, or opening PRs) unless the user **explicitly** asks you to.
 - Do not auto-stage, auto-commit, or auto-push any changes. Always wait for explicit user confirmation.
 - When the user requests changes, apply them directly without creating branches or PRs unless specifically instructed otherwise.

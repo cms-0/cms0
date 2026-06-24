@@ -5,16 +5,22 @@ import { dirname, join } from "node:path";
 
 import {
   appendOutput,
-  autoResolvePrompts,
   createPushOutputState,
+  resolvePrompts,
+  PushTimeoutError,
+  type AmbiguityEscalationState,
 } from "./push-output";
 
 export type PushResult = {
   code: number | null;
-  handledColumnPrompts: number;
-  handledRenamePrompts: number;
-  handledTruncatePrompts: number;
+  answeredQuestionCount: number;
+  lastAnsweredOffset: number;
   output: string;
+};
+
+export type PushTimeouts = {
+  idleTimeoutMs: number;
+  totalTimeoutMs: number;
 };
 
 type NodePtyModule = typeof import("node-pty");
@@ -112,7 +118,19 @@ export const buildDirectNodeArgs = (
   ],
 });
 
+const toPushResult = (
+  state: ReturnType<typeof createPushOutputState>,
+  code: number | null,
+): PushResult => ({
+  code,
+  answeredQuestionCount: state.answeredQuestionCount,
+  lastAnsweredOffset: state.lastAnsweredOffset,
+  output: state.output,
+});
+
 export const runDbPushWithNodePty = async (
+  escalationState: AmbiguityEscalationState,
+  timeouts: PushTimeouts,
   drizzleBin: string,
   configPath: string | undefined,
   cwd: string,
@@ -120,7 +138,7 @@ export const runDbPushWithNodePty = async (
 ): Promise<PushResult> => {
   ensureNodePtyHelperExecutable(cwd);
   const pty = loadNodePty();
-  return new Promise<PushResult>((resolve) => {
+  return new Promise<PushResult>((resolve, reject) => {
     const ptyProcess = pty.spawn(
       process.execPath,
       [
@@ -144,26 +162,55 @@ export const runDbPushWithNodePty = async (
     );
 
     const state = createPushOutputState();
+    let settled = false;
+    let idleTimer: NodeJS.Timeout;
+
+    const clearTimers = (): void => {
+      clearTimeout(idleTimer);
+      clearTimeout(totalTimer);
+    };
+
+    const failWithTimeout = (timeoutMs: number): void => {
+      if (settled) return;
+      settled = true;
+      clearTimers();
+      ptyProcess.kill();
+      reject(new PushTimeoutError({ timeoutMs, output: state.output }));
+    };
+
+    const totalTimer = setTimeout(
+      () => failWithTimeout(timeouts.totalTimeoutMs),
+      timeouts.totalTimeoutMs,
+    );
+    idleTimer = setTimeout(
+      () => failWithTimeout(timeouts.idleTimeoutMs),
+      timeouts.idleTimeoutMs,
+    );
 
     ptyProcess.onData((data) => {
+      if (settled) return;
       process.stdout.write(data);
       appendOutput(state, data);
-      autoResolvePrompts(state, (input) => ptyProcess.write(input));
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(
+        () => failWithTimeout(timeouts.idleTimeoutMs),
+        timeouts.idleTimeoutMs,
+      );
+      resolvePrompts(state, escalationState, (input) => ptyProcess.write(input));
     });
 
     ptyProcess.onExit(({ exitCode }) => {
-      resolve({
-        code: exitCode,
-        handledColumnPrompts: state.handledColumnPrompts,
-        handledRenamePrompts: state.handledRenamePrompts,
-        handledTruncatePrompts: state.handledTruncatePrompts,
-        output: state.output,
-      });
+      if (settled) return;
+      settled = true;
+      clearTimers();
+      resolve(toPushResult(state, exitCode));
     });
   });
 };
 
 export const runDbPushWithScriptTty = (
+  escalationState: AmbiguityEscalationState,
+  timeouts: PushTimeouts,
   command: string,
   args: string[],
   cwd: string,
@@ -182,38 +229,66 @@ export const runDbPushWithScriptTty = (
     });
 
     const state = createPushOutputState();
+    let settled = false;
+    let idleTimer: NodeJS.Timeout;
 
-    child.stdout.on("data", (data: unknown) => {
+    const clearTimers = (): void => {
+      clearTimeout(idleTimer);
+      clearTimeout(totalTimer);
+    };
+
+    const failWithTimeout = (timeoutMs: number): void => {
+      if (settled) return;
+      settled = true;
+      clearTimers();
+      child.kill();
+      reject(new PushTimeoutError({ timeoutMs, output: state.output }));
+    };
+
+    const totalTimer = setTimeout(
+      () => failWithTimeout(timeouts.totalTimeoutMs),
+      timeouts.totalTimeoutMs,
+    );
+    idleTimer = setTimeout(
+      () => failWithTimeout(timeouts.idleTimeoutMs),
+      timeouts.idleTimeoutMs,
+    );
+
+    const onChunk = (data: unknown): void => {
+      if (settled) return;
       const chunk = String(data);
       process.stdout.write(chunk);
       appendOutput(state, chunk);
-      autoResolvePrompts(state, (input) => child.stdin.write(input));
-    });
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(
+        () => failWithTimeout(timeouts.idleTimeoutMs),
+        timeouts.idleTimeoutMs,
+      );
+      resolvePrompts(state, escalationState, (input) => child.stdin.write(input));
+    };
 
-    child.stderr.on("data", (data: unknown) => {
-      const chunk = String(data);
-      process.stderr.write(chunk);
-      appendOutput(state, chunk);
-      autoResolvePrompts(state, (input) => child.stdin.write(input));
-    });
+    child.stdout.on("data", onChunk);
+    child.stderr.on("data", onChunk);
 
     child.on("error", (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      clearTimers();
       reject(error instanceof Error ? error : new Error(String(error)));
     });
 
     child.on("exit", (code: number | null) => {
-      resolve({
-        code,
-        handledColumnPrompts: state.handledColumnPrompts,
-        handledRenamePrompts: state.handledRenamePrompts,
-        handledTruncatePrompts: state.handledTruncatePrompts,
-        output: state.output,
-      });
+      if (settled) return;
+      settled = true;
+      clearTimers();
+      resolve(toPushResult(state, code));
     });
   });
 };
 
 export const runDbPushWithPipes = (
+  escalationState: AmbiguityEscalationState,
+  timeouts: PushTimeouts,
   command: string,
   args: string[],
   cwd: string,
@@ -227,32 +302,58 @@ export const runDbPushWithPipes = (
     });
 
     const state = createPushOutputState();
+    let settled = false;
+    let idleTimer: NodeJS.Timeout;
 
-    child.stdout.on("data", (data: unknown) => {
+    const clearTimers = (): void => {
+      clearTimeout(idleTimer);
+      clearTimeout(totalTimer);
+    };
+
+    const failWithTimeout = (timeoutMs: number): void => {
+      if (settled) return;
+      settled = true;
+      clearTimers();
+      child.kill();
+      reject(new PushTimeoutError({ timeoutMs, output: state.output }));
+    };
+
+    const totalTimer = setTimeout(
+      () => failWithTimeout(timeouts.totalTimeoutMs),
+      timeouts.totalTimeoutMs,
+    );
+    idleTimer = setTimeout(
+      () => failWithTimeout(timeouts.idleTimeoutMs),
+      timeouts.idleTimeoutMs,
+    );
+
+    const onChunk = (data: unknown): void => {
+      if (settled) return;
       const chunk = String(data);
       process.stdout.write(chunk);
       appendOutput(state, chunk);
-      autoResolvePrompts(state, (input) => child.stdin.write(input));
-    });
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(
+        () => failWithTimeout(timeouts.idleTimeoutMs),
+        timeouts.idleTimeoutMs,
+      );
+      resolvePrompts(state, escalationState, (input) => child.stdin.write(input));
+    };
 
-    child.stderr.on("data", (data: unknown) => {
-      const chunk = String(data);
-      process.stderr.write(chunk);
-      appendOutput(state, chunk);
-      autoResolvePrompts(state, (input) => child.stdin.write(input));
-    });
+    child.stdout.on("data", onChunk);
+    child.stderr.on("data", onChunk);
 
     child.on("error", (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      clearTimers();
       reject(error instanceof Error ? error : new Error(String(error)));
     });
 
     child.on("exit", (code: number | null) => {
-      resolve({
-        code,
-        handledColumnPrompts: state.handledColumnPrompts,
-        handledRenamePrompts: state.handledRenamePrompts,
-        handledTruncatePrompts: state.handledTruncatePrompts,
-        output: state.output,
-      });
+      if (settled) return;
+      settled = true;
+      clearTimers();
+      resolve(toPushResult(state, code));
     });
   });

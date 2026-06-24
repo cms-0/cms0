@@ -145,25 +145,25 @@ function installFetchMock(handler: FetchHandler) {
 function standardHandler(url: URL) {
   const path = url.pathname;
 
-  if (path === "/api/content/home") {
+  if (path === "/api/content/_graph/home") {
     return { id: "home-1", title: "Welcome" };
   }
-  if (path === "/api/content/home/hero") {
+  if (path === "/api/content/_graph/home/hero") {
     return { id: "hero-1", heading: "Hero heading" };
   }
-  if (path === "/api/content/home/featuredPosts") {
+  if (path === "/api/content/_graph/home/featuredPosts") {
     return {
       items: [{ id: "fp-1", postId: "p1" }],
       total: 1,
     };
   }
-  if (path === "/api/content/posts") {
+  if (path === "/api/content/_graph/posts") {
     return {
       items: [{ id: "posts-1", postId: "p1" }],
       total: 11,
     };
   }
-  if (path === "/api/content/names") {
+  if (path === "/api/content/_graph/names") {
     return {
       items: [
         { id: "n1", value: "Ada" },
@@ -172,31 +172,31 @@ function standardHandler(url: URL) {
       total: 2,
     };
   }
-  if (path === "/api/content/profile") {
+  if (path === "/api/content/_graph/profile") {
     return "u1";
   }
-  if (path === "/api/content/models/Post") {
+  if (path === "/api/content/_graph/models/Post") {
     return {
       items: [{ id: "p1", title: "Post 1", authorId: "u1" }],
       total: 1,
     };
   }
-  if (path === "/api/content/models/Post/p1") {
+  if (path === "/api/content/_graph/models/Post/p1") {
     return { id: "p1", title: "Post 1", authorId: "u1" };
   }
-  if (path === "/api/content/models/Post/p1/comments") {
+  if (path === "/api/content/_graph/models/Post/p1/comments") {
     return {
       items: [{ id: "c1", body: "First comment" }],
       total: 1,
     };
   }
-  if (path === "/api/content/models/Post/p1/tags") {
+  if (path === "/api/content/_graph/models/Post/p1/tags") {
     return {
       items: [{ id: "t1", value: "news" }],
       total: 1,
     };
   }
-  if (path === "/api/content/models/User/u1") {
+  if (path === "/api/content/_graph/models/User/u1") {
     return { id: "u1", name: "Alice", managerId: "u1" };
   }
 
@@ -349,7 +349,7 @@ test("preserves nested testimonial stats from resolved root endpoint", async () 
     );
     assert.equal(resolvedCalls.length, 1);
     const modelCalls = calls.filter((call) =>
-      call.pathname.startsWith("/api/content/models/Testimonial/"),
+      call.pathname.startsWith("/api/content/_graph/models/Testimonial/"),
     );
     assert.equal(modelCalls.length, 0);
   } finally {
@@ -390,7 +390,8 @@ test("preserves distinct collection-entry identities for duplicate resolved mode
     }
 
     if (
-      url.pathname === "/api/content/homePage/testimonialSection/testimonials"
+      url.pathname ===
+      "/api/content/_graph/homePage/testimonialSection/testimonials"
     ) {
       return {
         items: [
@@ -424,7 +425,7 @@ test("preserves distinct collection-entry identities for duplicate resolved mode
       calls.filter(
         (call) =>
           call.pathname ===
-          "/api/content/homePage/testimonialSection/testimonials",
+          "/api/content/_graph/homePage/testimonialSection/testimonials",
       ).length,
       1,
     );
@@ -488,7 +489,7 @@ test("resolved duplicate model refs stay unchanged when Canvas transport is disa
       calls.filter(
         (call) =>
           call.pathname ===
-          "/api/content/homePage/testimonialSection/testimonials",
+          "/api/content/_graph/homePage/testimonialSection/testimonials",
       ).length,
       0,
     );
@@ -514,7 +515,7 @@ test("supports response envelope and query passthrough for collections", async (
     assert.equal(envelope.total, 11);
 
     const listCall = calls.find(
-      (call) => call.pathname === "/api/content/posts",
+      (call) => call.pathname === "/api/content/_graph/posts",
     );
     assert.ok(listCall);
     assert.equal(listCall!.searchParams.get("page"), "2");
@@ -1040,7 +1041,7 @@ test("does not lazy-fetch missing branches outside requested fields projection",
     });
 
     const childCalls = calls.filter((call) =>
-      call.pathname.startsWith("/api/content/home/"),
+      call.pathname.startsWith("/api/content/_graph/home/"),
     );
     assert.equal(childCalls.length, 0);
   } finally {
@@ -1151,7 +1152,7 @@ test("supports includeId and resolveModelRefs=false options", async () => {
     assert.deepEqual(idsOnly, ["p1"]);
 
     const noModelFetch = calls.filter((call) =>
-      call.pathname.startsWith("/api/content/models/Post/p1"),
+      call.pathname.startsWith("/api/content/_graph/models/Post/p1"),
     );
     assert.equal(noModelFetch.length, 0);
 
@@ -1209,7 +1210,7 @@ test("exposes sdk metadata through client.meta only", async () => {
 test("throws for invalid collection envelope shape", async () => {
   const descriptor = createDescriptor();
   const { restore } = installFetchMock((url) => {
-    if (url.pathname === "/api/content/posts") {
+    if (url.pathname === "/api/content/_graph/posts") {
       return { value: "unexpected" };
     }
     return standardHandler(url);
@@ -1250,7 +1251,7 @@ test("does not use container row id as modelRef id when property FK is missing",
   };
 
   const { calls, restore } = installFetchMock((url) => {
-    if (url.pathname === "/api/content/homePage") {
+    if (url.pathname === "/api/content/_graph/homePage") {
       return {
         id: "0e4e31f4-e63e-4d1e-95ec-b43b5b7dced5",
         headline: "Hello",
@@ -1279,7 +1280,7 @@ test("does not use container row id as modelRef id when property FK is missing",
     assert.equal(homePage.planSection, null);
 
     const modelCalls = calls.filter((call) =>
-      call.pathname.startsWith("/api/content/models/PlanSection/"),
+      call.pathname.startsWith("/api/content/_graph/models/PlanSection/"),
     );
     assert.equal(modelCalls.length, 0);
   } finally {
@@ -1318,7 +1319,7 @@ test("omits optional modelRef fields when FK is missing in model normalization",
   };
 
   const { calls, restore } = installFetchMock((url) => {
-    if (url.pathname === "/api/content/options") {
+    if (url.pathname === "/api/content/_graph/options") {
       return {
         items: [
           { id: "options-row-1", optionId: "o1" },
@@ -1328,7 +1329,7 @@ test("omits optional modelRef fields when FK is missing in model normalization",
       };
     }
 
-    if (url.pathname === "/api/content/models/Option/o1") {
+    if (url.pathname === "/api/content/_graph/models/Option/o1") {
       return {
         id: "o1",
         title: "Option A",
@@ -1336,7 +1337,7 @@ test("omits optional modelRef fields when FK is missing in model normalization",
       };
     }
 
-    if (url.pathname === "/api/content/models/Option/o2") {
+    if (url.pathname === "/api/content/_graph/models/Option/o2") {
       return {
         id: "o2",
         title: "Option B",
@@ -1344,7 +1345,7 @@ test("omits optional modelRef fields when FK is missing in model normalization",
       };
     }
 
-    if (url.pathname === "/api/content/models/Tag/t1") {
+    if (url.pathname === "/api/content/_graph/models/Tag/t1") {
       return {
         id: "t1",
         name: "Featured",
@@ -1372,7 +1373,7 @@ test("omits optional modelRef fields when FK is missing in model normalization",
     assert.equal("tag" in options[1]!, false);
 
     const tagFetches = calls.filter((call) =>
-      call.pathname.startsWith("/api/content/models/Tag/"),
+      call.pathname.startsWith("/api/content/_graph/models/Tag/"),
     );
     assert.equal(tagFetches.length, 1);
   } finally {
@@ -1407,20 +1408,20 @@ test("resolves modelRefs by property FK when object has multiple refs to same mo
   };
 
   const { calls, restore } = installFetchMock((url) => {
-    if (url.pathname === "/api/content/marketplacePage") {
+    if (url.pathname === "/api/content/_graph/marketplacePage") {
       return { id: "mp-1" };
     }
-    if (url.pathname === "/api/content/marketplacePage/quoteSection") {
+    if (url.pathname === "/api/content/_graph/marketplacePage/quoteSection") {
       return {
         id: "qs-1",
         imageId: "img-1",
         logoId: "img-2",
       };
     }
-    if (url.pathname === "/api/content/models/Image/img-1") {
+    if (url.pathname === "/api/content/_graph/models/Image/img-1") {
       return { id: "img-1", name: "Hero Image" };
     }
-    if (url.pathname === "/api/content/models/Image/img-2") {
+    if (url.pathname === "/api/content/_graph/models/Image/img-2") {
       return { id: "img-2", name: "Brand Logo" };
     }
 
@@ -1440,7 +1441,7 @@ test("resolves modelRefs by property FK when object has multiple refs to same mo
     assert.equal(marketplacePage.quoteSection.logo.name, "Brand Logo");
 
     const imageCalls = calls.filter((call) =>
-      call.pathname.startsWith("/api/content/models/Image/"),
+      call.pathname.startsWith("/api/content/_graph/models/Image/"),
     );
     assert.equal(imageCalls.length, 2);
     assert.equal(
@@ -1459,7 +1460,7 @@ test("resolves modelRefs by property FK when object has multiple refs to same mo
 test("validates normalized payloads and throws on shape mismatch", async () => {
   const descriptor = createDescriptor();
   const { restore } = installFetchMock((url) => {
-    if (url.pathname === "/api/content/home") {
+    if (url.pathname === "/api/content/_graph/home") {
       return { id: "home-1", title: 123 };
     }
     return standardHandler(url);
@@ -1543,10 +1544,10 @@ function createLocalizedPrimitiveArrayDescriptor(): FullDescriptor {
 function localizedHandler(url: URL) {
   const path = url.pathname;
 
-  if (path === "/api/content/blogPosts") {
+  if (path === "/api/content/_graph/blogPosts") {
     return { items: [{ id: "bp-row-1", blogPostId: "bp1" }], total: 1 };
   }
-  if (path === "/api/content/models/BlogPost/bp1") {
+  if (path === "/api/content/_graph/models/BlogPost/bp1") {
     return {
       id: "bp1",
       title: {
@@ -1605,7 +1606,7 @@ function localizedHandler(url: URL) {
       },
     };
   }
-  if (path === "/api/content/aboutUsPage") {
+  if (path === "/api/content/_graph/aboutUsPage") {
     return {
       id: "about-1",
       headline: "About",
@@ -1631,7 +1632,7 @@ function localizedHandler(url: URL) {
 }
 
 function localizedPrimitiveArrayHandler(url: URL) {
-  if (url.pathname === "/api/content/label") {
+  if (url.pathname === "/api/content/_graph/label") {
     return {
       id: "label-root-1",
       value: {
@@ -1644,7 +1645,7 @@ function localizedPrimitiveArrayHandler(url: URL) {
     };
   }
 
-  if (url.pathname === "/api/content/labels") {
+  if (url.pathname === "/api/content/_graph/labels") {
     return {
       items: [
         {
@@ -1695,14 +1696,14 @@ function createAssetDescriptor(): FullDescriptor {
 function assetHandler(url: URL) {
   const path = url.pathname;
 
-  if (path === "/api/content/images") {
+  if (path === "/api/content/_graph/images") {
     return {
       items: [{ id: "images-row-1", imageId: "img-root-1" }],
       total: 1,
     };
   }
 
-  if (path === "/api/content/models/Image") {
+  if (path === "/api/content/_graph/models/Image") {
     return {
       items: [
         {
@@ -1720,7 +1721,7 @@ function assetHandler(url: URL) {
     };
   }
 
-  if (path === "/api/content/models/Image/img-root-1") {
+  if (path === "/api/content/_graph/models/Image/img-root-1") {
     return {
       id: "img-root-1",
       name: "Root image",
@@ -1733,7 +1734,7 @@ function assetHandler(url: URL) {
     };
   }
 
-  if (path === "/api/content/models/Image/img-with-url") {
+  if (path === "/api/content/_graph/models/Image/img-with-url") {
     return {
       id: "img-with-url",
       name: "Signed",
@@ -2165,7 +2166,7 @@ test("filters localized fields by locale option recursively", async () => {
     assert.equal(blogPosts[0]?.description?.locales?.fr, "Description FR");
 
     const modelCall = calls.find(
-      (call) => call.pathname === "/api/content/models/BlogPost/bp1",
+      (call) => call.pathname === "/api/content/_graph/models/BlogPost/bp1",
     );
     assert.equal(modelCall?.searchParams.get("locale"), "fr");
   } finally {
@@ -2226,7 +2227,7 @@ test("filters localized singleton fields by locale", async () => {
     );
 
     const singletonCalls = calls.filter(
-      (call) => call.pathname === "/api/content/aboutUsPage",
+      (call) => call.pathname === "/api/content/_graph/aboutUsPage",
     );
     assert.equal(singletonCalls.length > 0, true);
     assert.equal(singletonCalls[0]?.searchParams.get("locale"), "fr");
@@ -2299,7 +2300,7 @@ function createUnionEnumHandler(descriptor: FullDescriptor): (url: URL) => any {
   return (url: URL) => {
     const path = url.pathname;
 
-    if (path === "/api/content/settings") {
+    if (path === "/api/content/_graph/settings") {
       if (url.searchParams.get("scenario") === "draft") {
         return {
           id: "settings-1",
@@ -2317,7 +2318,7 @@ function createUnionEnumHandler(descriptor: FullDescriptor): (url: URL) => any {
       };
     }
 
-    if (path === "/api/content/models/Image/img-1") {
+    if (path === "/api/content/_graph/models/Image/img-1") {
       return {
         id: "img-1",
         name: "Hero",
@@ -2431,7 +2432,7 @@ function seoHandler(url: URL) {
     { kind: "union" }
   >;
 
-  if (url.pathname === "/api/content/page") {
+  if (url.pathname === "/api/content/_graph/page") {
     return {
       id: "page-1",
       seo: {
@@ -2504,7 +2505,7 @@ function seoHandler(url: URL) {
     };
   }
 
-  if (url.pathname === "/api/content/models/Image/img-og-1") {
+  if (url.pathname === "/api/content/_graph/models/Image/img-og-1") {
     return {
       id: "img-og-1",
       name: "Open Graph Image",
@@ -2517,7 +2518,7 @@ function seoHandler(url: URL) {
     };
   }
 
-  if (url.pathname === "/api/content/models/Image/img-twitter-1") {
+  if (url.pathname === "/api/content/_graph/models/Image/img-twitter-1") {
     return {
       id: "img-twitter-1",
       name: "Twitter Image",
@@ -2562,7 +2563,7 @@ function seoUnionPlainStringHandler(url: URL) {
     { kind: "union" }
   >;
 
-  if (url.pathname === "/api/content/page") {
+  if (url.pathname === "/api/content/_graph/page") {
     return {
       id: "page-1",
       seo: {
@@ -2623,7 +2624,7 @@ function seoUnionUuidStringHandler(url: URL) {
       { kind: "union" }
     >;
 
-  if (url.pathname === "/api/content/page") {
+  if (url.pathname === "/api/content/_graph/page") {
     return {
       id: "page-1",
       seo: {
@@ -2643,7 +2644,7 @@ function seoUnionUuidStringHandler(url: URL) {
     };
   }
 
-  if (url.pathname === `/api/content/models/Image/${imageId}`) {
+  if (url.pathname === `/api/content/_graph/models/Image/${imageId}`) {
     return {
       id: imageId,
       name: "Seo Union Image",
@@ -2890,7 +2891,7 @@ test("resolves modelRef union branches for Seo image arrays", async () => {
     const imageModelCalls = calls.filter(
       (call) =>
         call.pathname ===
-        "/api/content/models/Image/11111111-1111-1111-1111-111111111111",
+        "/api/content/_graph/models/Image/11111111-1111-1111-1111-111111111111",
     );
     assert.equal(imageModelCalls.length, 1);
   } finally {

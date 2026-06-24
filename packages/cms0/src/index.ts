@@ -741,7 +741,7 @@ type ModelRefOptions = {
 const DEFAULT_MODEL_NORMALIZATION_CONCURRENCY = 8;
 
 const COLLECTION_SHAPE_ERROR =
-  "Invalid collection response. Expected array or { items, total }.";
+  "Invalid collection response. Expected array, { items, total }, or { data, pagination }.";
 
 function normalizeUploadsPath(uploadsPath: string | undefined): string {
   const raw = uploadsPath?.trim() || "/uploads";
@@ -1518,6 +1518,19 @@ function ensureCollectionEnvelope(
   throw new Error(`${COLLECTION_SHAPE_ERROR} Path: '${path}'.`);
 }
 
+function encodeGraphPath(path: string): string {
+  return path
+    .split("/")
+    .filter((segment) => segment.length > 0)
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+function buildGraphReadPath(path: string, id?: string): string {
+  const graphPath = id ? `${path}/${id}` : path;
+  return `_graph/${encodeGraphPath(graphPath)}`;
+}
+
 async function readCanvasModelRefCollectionIdentities(
   path: string,
   descriptor: Extract<FieldDescriptor, { kind: "modelRef" }>,
@@ -1536,7 +1549,7 @@ async function readCanvasModelRefCollectionIdentities(
 
   const pending = (async () => {
     try {
-      const rawCollection = await context.requestJson(path, {
+      const rawCollection = await context.requestJson(buildGraphReadPath(path), {
         query: {
           raw: 1,
           includeId: 1,
@@ -1610,28 +1623,16 @@ async function normalizeModelRef(
 
   const promise = (async () => {
     const modelPath = `models/${modelName}/${id}`;
-    const resolvedModelPath = `_graph/models/${encodeURIComponent(modelName)}/${encodeURIComponent(id)}`;
+    const resolvedModelPath = buildGraphReadPath(modelPath);
     const rawModel =
       inlineModel ??
-      (await (async () => {
-        const query = {
+      (await context.requestJson(resolvedModelPath, {
+        query: {
           raw: 1,
           ...(context.options.locale ? { locale: context.options.locale } : {}),
-        };
-
-        try {
-          return await context.requestJson(resolvedModelPath, {
-            query: {
-              ...query,
-              resolveModelRefs: 1,
-            },
-          });
-        } catch {
-          return context.requestJson(modelPath, {
-            query,
-          });
-        }
-      })());
+          resolveModelRefs: 1,
+        },
+      }));
     return normalizeField(
       modelDescriptor,
       `models/${modelName}/${encodeURIComponent(id)}`,
@@ -1752,7 +1753,7 @@ async function normalizeObjectField(
       const childRaw =
         inlineChildRaw !== undefined
           ? inlineChildRaw
-          : await context.requestJson(childPath, {
+          : await context.requestJson(buildGraphReadPath(childPath), {
               query: {
                 raw: 1,
                 ...(context.options.locale
@@ -1791,7 +1792,7 @@ async function normalizeObjectField(
       const childRaw =
         inlineChildRaw !== undefined
           ? inlineChildRaw
-          : await context.requestJson(childPath, {
+          : await context.requestJson(buildGraphReadPath(childPath), {
               query: {
                 raw: 1,
                 ...(context.options.locale
@@ -2786,56 +2787,37 @@ async function runResource(
     graphQuery.locale = locale;
   }
 
-  const useResolvedEndpoint =
+  const shouldDefaultGraphResolution =
     shouldNormalize &&
-    !byId &&
-    resource.kind === "root" &&
-    !resource.isCollection &&
-    isObjectDescriptor(resource.descriptor) &&
     resolveModelRefs;
 
   if (
-    useResolvedEndpoint &&
+    shouldDefaultGraphResolution &&
     graphQuery.resolveModelRefs === undefined
   ) {
     graphQuery.resolveModelRefs = true;
   }
-  if (useResolvedEndpoint && graphQuery.pageSize === undefined) {
+
+  const shouldDefaultFullRootPageSize =
+    shouldDefaultGraphResolution &&
+    !byId &&
+    resource.kind === "root" &&
+    !resource.isCollection &&
+    isObjectDescriptor(resource.descriptor);
+
+  if (shouldDefaultFullRootPageSize && graphQuery.pageSize === undefined) {
     graphQuery.pageSize = "full";
   }
 
   const normalizePath = byId
     ? `${resource.path}/${encodeURIComponent(byId)}`
     : resource.path;
-  const requestPath = useResolvedEndpoint
-    ? `_graph/${encodeURIComponent(resource.key)}`
-    : normalizePath;
-  let rawData: unknown;
-  if (useResolvedEndpoint) {
-    try {
-      rawData = await requestJson(baseUrl, apiKey, requestPath, {
-        query,
-        graph: graphQuery,
-        signal: options?.signal,
-      });
-    } catch (resolvedError) {
-      try {
-        rawData = await requestJson(baseUrl, apiKey, normalizePath, {
-          query,
-          graph: graphQuery,
-          signal: options?.signal,
-        });
-      } catch {
-        throw resolvedError;
-      }
-    }
-  } else {
-    rawData = await requestJson(baseUrl, apiKey, requestPath, {
-      query,
-      graph: graphQuery,
-      signal: options?.signal,
-    });
-  }
+  const requestPath = buildGraphReadPath(resource.path, byId);
+  const rawData = await requestJson(baseUrl, apiKey, requestPath, {
+    query,
+    graph: graphQuery,
+    signal: options?.signal,
+  });
 
   if (!shouldNormalize) {
     return applyFieldProjection(rawData, options?.fields, options?.exclude);
@@ -2859,7 +2841,7 @@ async function runResource(
     modelCache: new Map<string, Promise<any>>(),
     sharedModelInflightCache,
     canvasModelRefCollectionIdentityCache:
-      useResolvedEndpoint && isCms0CanvasTransportEnabled()
+      shouldNormalize && isCms0CanvasTransportEnabled()
         ? new Map<string, Promise<CanvasModelRefCollectionIdentity[] | null>>()
         : undefined,
     options: {
